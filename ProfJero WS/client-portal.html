@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Client Portal - ProfJero WorkSpace</title>
+    
+    <!-- Open Graph / Social Media Meta Tags for Link Previews -->
+    <meta property="og:title" content="ProfJero - Invoice Portal" />
+    <meta property="og:description" content="View and pay your invoice online securely." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://yourdomain.com/client-portal.html" />
+    <meta property="og:image" content="https://yourdomain.com/images/invoice-preview.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ProfJero - Invoice Portal" />
+    <meta name="twitter:description" content="View and pay your invoice online securely." />
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    
+    <style>
+        /* ============================================
+           PREMIUM VARIABLES
+           ============================================ */
+        :root {
+            --deep-blue: #1a237e;
+            --deep-blue-dark: #0f1555;
+            --emerald: #0d9488;
+            --emerald-light: #14b8a6;
+            --gold: #d4a017;
+            --gold-light: #f59e0b;
+            --text-primary: #0f172a;
+            --text-secondary: #1e293b;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --bg-primary: #f1f5f9;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+            --radius-sm: 0.5rem;
+            --radius-md: 0.75rem;
+            --radius-lg: 1rem;
+            --radius-xl: 1.25rem;
+            --radius-2xl: 1.5rem;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Dark Mode */
+        [data-theme="dark"] {
+            --text-primary: #f1f5f9;
+            --text-secondary: #e2e8f0;
+            --text-muted: #94a3b8;
+            --text-light: #64748b;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #1e293b;
+            --border-color: #334155;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+            --modal-bg: #1e293b;
+            --modal-text: #f1f5f9;
+            --modal-border: #334155;
+        }
+        
+        [data-theme="light"] {
+            --modal-bg: #ffffff;
+            --modal-text: #1a1a2e;
+            --modal-border: #e2e8f0;
+        }
+        
+        /* Reset & Base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: var(--transition);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Premium Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--deep-blue), var(--emerald));
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, var(--deep-blue-dark), var(--emerald-light));
+        }
+        
+        /* Premium Glass Card */
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        
+        .glass-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        
+        .glass-card-premium {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+        }
+        
+        .glass-card-premium:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+        }
+        
+        /* Gradient Backgrounds */
+        .bg-gradient-premium {
+            background: linear-gradient(135deg, var(--deep-blue), var(--emerald));
+        }
+        
+        .bg-gradient-subtle {
+            background: linear-gradient(135deg, rgba(26, 35, 126, 0.05), rgba(13, 148, 136, 0.05));
+        }
+        
+        /* Text Utilities */
+        .text-muted { color: var(--text-muted); }
+        .text-primary { color: var(--text-primary); }
+        .text-deep-blue { color: var(--deep-blue); }
+        .text-emerald { color: var(--emerald); }
+        .text-gold { color: var(--gold); }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .animate-slide-in-right {
+            animation: slideInRight 0.4s ease-out forwards;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        /* Loading Spinner for Invoice Button */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .spinner-inline {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border-color);
+            border-top-color: var(--deep-blue);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        
+        .spinner-inline-white {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #ffffff;
+        }
+        
+        /* Premium Spinner */
+        .spinner-premium {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--deep-blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        .spinner-premium-white {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #ffffff;
+        }
+        
+        /* Premium Button */
+        .btn-premium {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-premium::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+            opacity: 0;
+            transition: var(--transition);
+        }
+        
+        .btn-premium:hover::after {
+            opacity: 1;
+        }
+        
+        .btn-premium-primary {
+            background: linear-gradient(135deg, var(--deep-blue), var(--emerald));
+            color: white;
+            box-shadow: 0 4px 14px rgba(26, 35, 126, 0.25);
+        }
+        
+        .btn-premium-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(26, 35, 126, 0.35);
+        }
+        
+        .btn-premium-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn-premium-secondary:hover {
+            background: var(--bg-primary);
+            transform: translateY(-2px);
+        }
+        
+        .btn-premium-success {
+            background: linear-gradient(135deg, var(--emerald), var(--emerald-light));
+            color: white;
+            box-shadow: 0 4px 14px rgba(13, 148, 136, 0.25);
+        }
+        
+        .btn-premium-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(13, 148, 136, 0.35);
+        }
+        
+        .btn-premium-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);
+        }
+        
+        .btn-premium-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35);
+        }
+        
+        .btn-premium-gold {
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            color: white;
+            box-shadow: 0 4px 14px rgba(212, 160, 23, 0.25);
+        }
+        
+        .btn-premium-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 160, 23, 0.35);
+        }
+        
+        .btn-premium:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        /* Premium Input */
+        .input-premium {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            border: 2px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+        
+        .input-premium:focus {
+            outline: none;
+            border-color: var(--deep-blue);
+            box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.1);
+        }
+        
+        .input-premium::placeholder {
+            color: var(--text-light);
+        }
+        
+        /* Premium Select */
+        .select-premium {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            border: 2px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: var(--transition);
+            font-family: inherit;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            padding-right: 2.5rem;
+        }
+        
+        .select-premium:focus {
+            outline: none;
+            border-color: var(--deep-blue);
+            box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.1);
+        }
+        
+        /* Toast Notifications - Premium */
+        .toast-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 420px;
+            width: 100%;
+        }
+        
+        .toast {
+            padding: 16px 20px;
+            border-radius: var(--radius-md);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: var(--transition);
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        
+        .toast:hover {
+            transform: scale(1.02);
+        }
+        
+        .toast-success { border-left: 4px solid var(--emerald); }
+        .toast-error { border-left: 4px solid #ef4444; }
+        .toast-warning { border-left: 4px solid var(--gold); }
+        .toast-info { border-left: 4px solid #3b82f6; }
+        
+        .toast-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .toast-success .toast-icon { color: var(--emerald); }
+        .toast-error .toast-icon { color: #ef4444; }
+        .toast-warning .toast-icon { color: var(--gold); }
+        .toast-info .toast-icon { color: #3b82f6; }
+        
+        .toast-content { flex: 1; }
+        .toast-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+        .toast-message {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        
+        .toast-exit {
+            animation: slideOutRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        @keyframes slideOutRight {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+        
+        /* Modal - Premium */
+        #modal-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9998;
+            pointer-events: none;
+        }
+        
+        #modal-container > * {
+            pointer-events: auto;
+        }
+        
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        
+        /* Stats Cards */
+        .stat-card {
+            position: relative;
+            overflow: hidden;
+            padding: 1.5rem;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(26, 35, 126, 0.03), rgba(13, 148, 136, 0.03));
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .stat-icon-blue {
+            background: rgba(26, 35, 126, 0.1);
+            color: var(--deep-blue);
+        }
+        
+        .stat-icon-emerald {
+            background: rgba(13, 148, 136, 0.1);
+            color: var(--emerald);
+        }
+        
+        .stat-icon-gold {
+            background: rgba(212, 160, 23, 0.1);
+            color: var(--gold);
+        }
+        
+        .stat-icon-red {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        
+        .stat-number {
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+        }
+        
+        /* Invoice Item */
+        .invoice-item {
+            transition: var(--transition);
+        }
+        
+        .invoice-item:hover {
+            background: var(--bg-primary);
+        }
+        
+        /* Status Badge */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+        
+        .badge-paid {
+            background: rgba(13, 148, 136, 0.12);
+            color: var(--emerald);
+        }
+        
+        .badge-pending {
+            background: rgba(212, 160, 23, 0.12);
+            color: var(--gold);
+        }
+        
+        .badge-partially-paid {
+            background: rgba(139, 92, 246, 0.12);
+            color: #8b5cf6;
+        }
+        
+        .badge-overdue {
+            background: rgba(239, 68, 68, 0.12);
+            color: #ef4444;
+        }
+        
+        .badge-draft {
+            background: rgba(100, 116, 139, 0.12);
+            color: #64748b;
+        }
+        
+        .badge-sent {
+            background: rgba(59, 130, 246, 0.12);
+            color: #3b82f6;
+        }
+        
+        .badge-cancelled {
+            background: rgba(100, 116, 139, 0.12);
+            color: #64748b;
+        }
+        
+        .badge-refunded {
+            background: rgba(236, 72, 153, 0.12);
+            color: #ec4899;
+        }
+        
+        /* Responsive */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        @media (max-width: 640px) {
+            .container { padding: 0 16px; }
+            .stat-number { font-size: 1.25rem; }
+        }
+        
+        /* Utility Classes */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .items-start { align-items: flex-start; }
+        .items-end { align-items: flex-end; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .gap-1 { gap: 0.25rem; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .gap-8 { gap: 2rem; }
+        .w-full { width: 100%; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        .mt-8 { margin-top: 2rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .p-3 { padding: 0.75rem; }
+        .p-4 { padding: 1rem; }
+        .p-5 { padding: 1.25rem; }
+        .p-6 { padding: 1.5rem; }
+        .p-8 { padding: 2rem; }
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-sm { font-size: 0.875rem; }
+        .text-xs { font-size: 0.75rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-3xl { font-size: 1.875rem; }
+        .font-bold { font-weight: 700; }
+        .font-semibold { font-weight: 600; }
+        .font-medium { font-weight: 500; }
+        .line-clamp-1 {
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .border-t { border-top: 1px solid var(--border-color); }
+        .border-b { border-bottom: 1px solid var(--border-color); }
+        .border-l-4 { border-left: 4px solid var(--border-color); }
+        .bg-primary { background: var(--bg-primary); }
+        .bg-secondary { background: var(--bg-secondary); }
+        .rounded-lg { border-radius: var(--radius-lg); }
+        .rounded-xl { border-radius: var(--radius-xl); }
+        .shadow-md { box-shadow: var(--shadow-md); }
+        .shadow-lg { box-shadow: var(--shadow-lg); }
+        .overflow-hidden { overflow: hidden; }
+        .overflow-x-auto { overflow-x: auto; }
+        .overflow-y-auto { overflow-y: auto; }
+        .min-h-screen { min-height: 100vh; }
+        .min-h-[60vh] { min-height: 60vh; }
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .inset-0 { inset: 0; }
+        .top-0 { top: 0; }
+        .left-3 { left: 0.75rem; }
+        .top-1/2 { top: 50%; }
+        .transform { transform: translateY(-50%); }
+        .-translate-y-1/2 { transform: translateY(-50%); }
+        .pl-16 { padding-left: 4rem; }
+        .pr-4 { padding-right: 1rem; }
+        .flex-1 { flex: 1; }
+        .flex-shrink-0 { flex-shrink: 0; }
+        .flex-wrap { flex-wrap: wrap; }
+        .whitespace-nowrap { white-space: nowrap; }
+        .break-words { word-wrap: break-word; }
+        .max-w-md { max-width: 28rem; }
+        .max-w-4xl { max-width: 56rem; }
+        .max-w-5xl { max-width: 64rem; }
+        .my-8 { margin-top: 2rem; margin-bottom: 2rem; }
+        .max-h-95vh { max-height: 95vh; }
+        
+        /* Grid */
+        .grid { display: grid; }
+        .grid-cols-1 { grid-template-columns: 1fr; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        
+        @media (min-width: 640px) {
+            .sm\:grid-cols-2 { grid-template-columns: 1fr 1fr; }
+            .sm\:grid-cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+            .sm\:flex-row { flex-direction: row; }
+            .sm\:items-center { align-items: center; }
+            .sm\:text-right { text-align: right; }
+        }
+        
+        @media (min-width: 1024px) {
+            .lg\:grid-cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+            .lg\:flex-row { flex-direction: row; }
+        }
+        
+        /* Dark mode toggle button - subtle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-md);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        /* Login page specific */
+        .login-container {
+            max-width: 420px;
+            margin: 60px auto;
+        }
+        
+        .login-logo {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--deep-blue), var(--emerald));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 8px 32px rgba(26, 35, 126, 0.25);
+        }
+        
+        .login-logo i {
+            font-size: 32px;
+            color: white;
+        }
+        
+        /* Payment section - Mobile Money */
+        .payment-section {
+            border: 2px dashed var(--border-color);
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            text-align: center;
+            transition: var(--transition);
+        }
+        
+        .payment-section:hover {
+            border-color: var(--emerald);
+            background: rgba(13, 148, 136, 0.02);
+        }
+        
+        .payment-details {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        /* Mobile Money number - light color in dark mode */
+        .payment-details .mobile-money-number {
+            color: var(--deep-blue);
+            font-weight: 700;
+        }
+        
+        [data-theme="dark"] .payment-details .mobile-money-number {
+            color: #60a5fa;
+        }
+        
+        /* Invoice view - Modal styles */
+        .invoice-modal-container {
+            background: var(--modal-bg);
+            color: var(--modal-text);
+        }
+        
+        .invoice-modal-container .invoice-container {
+            background: var(--modal-bg);
+            color: var(--modal-text);
+        }
+        
+        .invoice-modal-container .invoice-container * {
+            color: var(--modal-text);
+        }
+        
+        .invoice-modal-container .invoice-header {
+            border-bottom-color: var(--modal-border);
+        }
+        
+        .invoice-modal-container .invoice-title {
+            color: var(--modal-text);
+        }
+        
+        .invoice-modal-container .table-premium th {
+            color: var(--text-muted);
+            border-bottom-color: var(--modal-border);
+        }
+        
+        .invoice-modal-container .table-premium td {
+            color: var(--modal-text);
+            border-bottom-color: var(--modal-border);
+        }
+        
+        .invoice-modal-container .badge {
+            color: var(--modal-text);
+        }
+        
+        /* Scrollable modal body */
+        .modal-scrollable {
+            max-height: 85vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        .modal-scrollable::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .modal-scrollable::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+            border-radius: 3px;
+        }
+        
+        .modal-scrollable::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--deep-blue), var(--emerald));
+            border-radius: 3px;
+        }
+        
+        /* Loading overlay for invoice button */
+        .btn-loading {
+            position: relative;
+            pointer-events: none;
+        }
+        
+        .btn-loading .btn-text {
+            visibility: hidden;
+        }
+        
+        .btn-loading .btn-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        /* Extra small screen utilities */
+        @media (max-width: 480px) {
+            .xs\:inline { display: inline; }
+            .xs\:hidden { display: none; }
+        }
+        
+        @media (min-width: 481px) {
+            .xs\:inline { display: inline; }
+            .xs\:hidden { display: none; }
+        }
+
+        /* Force light color for mobile money number in dark mode */
+        [data-theme="dark"] .mobile-money-number {
+            color: #60a5fa !important;
+        }
+
+        [data-theme="dark"] .payment-details .mobile-money-number {
+            color: #60a5fa !important;
+        }
+
+        [data-theme="dark"] .payment-modal-mobile-money {
+            color: #60a5fa !important;
+        }
+
+        /* Also fix any spans with deep-blue color in dark mode */
+        [data-theme="dark"] .payment-details span[style*="color: var(--deep-blue)"] {
+            color: #60a5fa !important;
+        }
+
+        [data-theme="dark"] .payment-modal span[style*="color: var(--deep-blue)"] {
+            color: #60a5fa !important;
+        }
+
+        /* Fix for invoice background in light mode */
+        .invoice-modal-container .invoice-container {
+            background: var(--modal-bg) !important;
+            color: var(--modal-text) !important;
+        }
+
+        .invoice-modal-container .invoice-container .glass-card,
+        .invoice-modal-container .invoice-container .bg-secondary,
+        .invoice-modal-container .invoice-container .bg-primary {
+            background: var(--modal-bg) !important;
+        }
+
+        .invoice-modal-container .invoice-item {
+            background: var(--modal-bg) !important;
+        }
+
+        .invoice-modal-container .invoice-item:hover {
+            background: var(--bg-primary) !important;
+        }
+
+        .invoice-modal-container .table-premium tbody tr {
+            background: var(--modal-bg) !important;
+        }
+
+        .invoice-modal-container .table-premium tbody tr:hover {
+            background: var(--bg-primary) !important;
+        }
+
+        .invoice-modal-container .payment-section {
+            background: var(--bg-primary) !important;
+        }
+
+        .invoice-modal-container .invoice-container * {
+            color: var(--modal-text) !important;
+        }
+
+        .invoice-modal-container .invoice-container .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        .invoice-modal-container .invoice-header {
+            background: var(--modal-bg) !important;
+            border-bottom-color: var(--modal-border) !important;
+        }
+
+        .invoice-modal-container .invoice-footer {
+            background: var(--modal-bg) !important;
+            border-top-color: var(--modal-border) !important;
+        }
+
+        .modal-overlay .invoice-modal-container {
+            background: var(--modal-bg) !important;
+        }
+
+        .invoice-modal-container .badge {
+            color: var(--modal-text) !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-container {
+            background: #ffffff !important;
+            color: #1a1a2e !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-container * {
+            color: #1a1a2e !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-container .text-muted {
+            color: #64748b !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-item {
+            background: #ffffff !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-item:hover {
+            background: #f1f5f9 !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .payment-section {
+            background: #f1f5f9 !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .table-premium tbody tr {
+            background: #ffffff !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .table-premium tbody tr:hover {
+            background: #f1f5f9 !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-header {
+            background: #ffffff !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-footer {
+            background: #ffffff !important;
+        }
+
+        .invoice-modal-container .invoice-container *:not(.badge):not(.btn-premium) {
+            background: transparent !important;
+        }
+
+        .invoice-modal-container .invoice-container table,
+        .invoice-modal-container .invoice-container tbody,
+        .invoice-modal-container .invoice-container tr,
+        .invoice-modal-container .invoice-container td,
+        .invoice-modal-container .invoice-container th {
+            background: transparent !important;
+        }
+
+        .invoice-modal-container .invoice-container tbody tr {
+            background: var(--modal-bg) !important;
+        }
+
+        .invoice-modal-container .invoice-container tbody tr:hover {
+            background: var(--bg-primary) !important;
+        }
+
+        .invoice-modal-container .invoice-container thead tr {
+            background: var(--bg-primary) !important;
+        }
+
+        .invoice-modal-container .invoice-container > div > div[style*="background: var(--bg-primary)"] {
+            background: var(--bg-primary) !important;
+        }
+
+        .invoice-modal-container .invoice-header {
+            background: var(--modal-bg) !important;
+        }
+
+        .invoice-modal-container .invoice-container p,
+        .invoice-modal-container .invoice-container h1,
+        .invoice-modal-container .invoice-container h2,
+        .invoice-modal-container .invoice-container h3,
+        .invoice-modal-container .invoice-container h4,
+        .invoice-modal-container .invoice-container span,
+        .invoice-modal-container .invoice-container div,
+        .invoice-modal-container .invoice-container td,
+        .invoice-modal-container .invoice-container th,
+        .invoice-modal-container .invoice-container strong {
+            color: var(--modal-text) !important;
+        }
+
+        .invoice-modal-container .invoice-container .text-muted,
+        .invoice-modal-container .invoice-container [style*="color: var(--text-muted)"] {
+            color: var(--text-muted) !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-container {
+            background: #ffffff !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-container tbody tr {
+            background: #ffffff !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-container tbody tr:hover {
+            background: #f1f5f9 !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-container thead tr {
+            background: #f1f5f9 !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-container > div > div[style*="background: var(--bg-primary)"] {
+            background: #f1f5f9 !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-header {
+            background: #ffffff !important;
+            border-bottom-color: #e2e8f0 !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-container p,
+        [data-theme="light"] .invoice-modal-container .invoice-container h1,
+        [data-theme="light"] .invoice-modal-container .invoice-container h2,
+        [data-theme="light"] .invoice-modal-container .invoice-container h3,
+        [data-theme="light"] .invoice-modal-container .invoice-container h4,
+        [data-theme="light"] .invoice-modal-container .invoice-container span,
+        [data-theme="light"] .invoice-modal-container .invoice-container div,
+        [data-theme="light"] .invoice-modal-container .invoice-container td,
+        [data-theme="light"] .invoice-modal-container .invoice-container th,
+        [data-theme="light"] .invoice-modal-container .invoice-container strong {
+            color: #1a1a2e !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-container .text-muted,
+        [data-theme="light"] .invoice-modal-container .invoice-container [style*="color: var(--text-muted)"] {
+            color: #64748b !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-container .payment-section {
+            background: #f1f5f9 !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-container .payment-details {
+            background: #ffffff !important;
+            border-color: #e2e8f0 !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-container .badge {
+            color: #1a1a2e !important;
+        }
+
+        [data-theme="dark"] .invoice-modal-container .invoice-container .mobile-money-number {
+            color: #60a5fa !important;
+        }
+
+        .invoice-modal-container .invoice-container .invoice-item {
+            background: var(--modal-bg) !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-container .invoice-item {
+            background: #ffffff !important;
+        }
+
+        .invoice-modal-container .invoice-container tfoot tr:last-child {
+            background: var(--bg-primary) !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-container tfoot tr:last-child {
+            background: #f1f5f9 !important;
+        }
+
+        .invoice-modal-container .invoice-container div[style*="background: var(--bg-primary)"] {
+            background: var(--bg-primary) !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .invoice-container div[style*="background: var(--bg-primary)"] {
+            background: #f1f5f9 !important;
+        }
+
+        .invoice-modal-container .modal-scrollable {
+            background: var(--modal-bg) !important;
+        }
+
+        [data-theme="light"] .invoice-modal-container .modal-scrollable {
+            background: #ffffff !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
+        <i class="fas fa-moon" id="theme-icon"></i>
+    </button>
+    
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+    
+    <!-- Modal Container -->
+    <div id="modal-container"></div>
+    
+    <!-- Client Portal Container -->
+    <div id="client-portal-container" class="container py-8">
+        <div class="flex items-center justify-center min-h-[60vh]">
+            <div class="text-center">
+                <div class="spinner-premium mx-auto mb-4"></div>
+                <p class="text-muted" style="font-weight: 500;">Loading your portal...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         FIREBASE CONFIGURATION - INLINE
+         ============================================ -->
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js",
+                "firebase/storage": "https://www.gstatic.com/firebasejs/10.3.0/firebase-storage.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        // ============================================
+        // IMPORTS
+        // ============================================
+        import { initializeApp, getApp, getApps } from 'firebase/app';
+        import { 
+            getAuth, 
+            onAuthStateChanged,
+            signOut,
+            signInWithEmailAndPassword,
+            createUserWithEmailAndPassword
+        } from 'firebase/auth';
+        import { 
+            getFirestore, 
+            collection, 
+            query, 
+            where, 
+            getDocs, 
+            addDoc, 
+            updateDoc, 
+            deleteDoc, 
+            doc, 
+            orderBy, 
+            serverTimestamp,
+            getDoc,
+            setDoc,
+            Timestamp,
+            onSnapshot
+        } from 'firebase/firestore';
+        
+        // ============================================
+        // FIREBASE CONFIG
+        // ============================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDSvTre5jtA1CqsbxqLSsJ4n0OBvX4BCqo",
+            authDomain: "profjero.firebaseapp.com",
+            projectId: "profjero",
+            storageBucket: "profjero.firebasestorage.app",
+            messagingSenderId: "950791554195",
+            appId: "1:950791554195:web:412f915845fbc84634f966",
+            measurementId: "G-FG9ZG2FM94"
+        };
+        
+        // ============================================
+        // INITIALIZE FIREBASE - SAFE CHECK
+        // ============================================
+        let app;
+        try {
+            if (getApps().length > 0) {
+                app = getApp();
+                console.log('✅ Using existing Firebase app');
+            } else {
+                app = initializeApp(firebaseConfig);
+                console.log('✅ Initialized new Firebase app');
+            }
+        } catch (error) {
+            console.error('❌ Firebase initialization error:', error);
+            try {
+                app = getApp();
+                console.log('✅ Recovered existing Firebase app');
+            } catch (e) {
+                console.error('❌ Could not initialize Firebase:', e);
+                document.getElementById('client-portal-container').innerHTML = `
+                    <div class="glass-card rounded-xl p-12 text-center">
+                        <i class="fas fa-exclamation-triangle text-6xl mb-4" style="color: #ef4444;"></i>
+                        <h3 class="text-xl font-semibold mb-2" style="color: #ef4444;">Connection Error</h3>
+                        <p class="text-muted">Could not connect to the server. Please try again later.</p>
+                        <button onclick="location.reload()" class="btn-premium btn-premium-primary mt-4">
+                            <i class="fas fa-redo mr-1"></i> Reload
+                        </button>
+                    </div>
+                `;
+                throw error;
+            }
+        }
+        
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // Expose db globally for modules
+        window.db = db;
+        window.auth = auth;
+        
+        // ============================================
+        // BUSINESS SETTINGS - FETCH FROM FIRESTORE
+        // ============================================
+        let businessSettings = null;
+        
+        async function loadBusinessSettingsFromFirestore() {
+            try {
+                // First, try to get the business owner's UID from the first invoice
+                // or from the clients collection
+                let userId = null;
+                
+                // Try to find a business owner from clients
+                const clientsRef = collection(db, 'clients');
+                const clientsSnapshot = await getDocs(clientsRef);
+                
+                // Find a client that has a userId (business owner)
+                for (const doc of clientsSnapshot.docs) {
+                    const data = doc.data();
+                    if (data.userId) {
+                        userId = data.userId;
+                        break;
+                    }
+                }
+                
+                if (!userId) {
+                    // Try to get from invoices
+                    const invoicesRef = collection(db, 'invoices');
+                    const invoicesSnapshot = await getDocs(invoicesRef);
+                    for (const doc of invoicesSnapshot.docs) {
+                        const data = doc.data();
+                        if (data.userId) {
+                            userId = data.userId;
+                            break;
+                        }
+                    }
+                }
+                
+                if (!userId) {
+                    console.log('⚠️ No business owner found, using default settings');
+                    return getDefaultBusinessSettings();
+                }
+                
+                // Now fetch the business settings using the userId
+                const settingsDoc = await getDoc(doc(db, 'businessSettings', userId));
+                
+                if (settingsDoc.exists()) {
+                    const data = settingsDoc.data();
+                    console.log('✅ Business settings loaded from Firestore:', data);
+                    return {
+                        name: data.name || 'ProfJero WorkSpace',
+                        address: data.address || '123 Business Street, Accra, Ghana',
+                        phone: data.phone || '+233 20 000 0000',
+                        email: data.email || 'info@profjero.com',
+                        logo: data.logo || null,
+                        prefix: data.prefix || 'PJ',
+                        paymentDetails: {
+                            mobileMoney: data.paymentDetails?.mobileMoney || '+233 24 000 0000',
+                            mobileMoneyName: data.paymentDetails?.mobileMoneyName || 'ProfJero WorkSpace',
+                            paymentInstructions: data.paymentDetails?.paymentInstructions || 'Please include invoice number as reference'
+                        }
+                    };
+                } else {
+                    console.log('⚠️ No business settings found in Firestore, using defaults');
+                    return getDefaultBusinessSettings();
+                }
+            } catch (error) {
+                console.error('❌ Error loading business settings from Firestore:', error);
+                return getDefaultBusinessSettings();
+            }
+        }
+        
+        function getDefaultBusinessSettings() {
+            return {
+                name: 'ProfJero WorkSpace',
+                address: '123 Business Street, Accra, Ghana',
+                phone: '+233 20 000 0000',
+                email: 'info@profjero.com',
+                logo: null,
+                prefix: 'PJ',
+                paymentDetails: {
+                    mobileMoney: '+233 24 000 0000',
+                    mobileMoneyName: 'ProfJero WorkSpace',
+                    paymentInstructions: 'Please include invoice number as reference'
+                }
+            };
+        }
+        
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+        window.showToast = function(message, type = 'info', title = '') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
+            
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <i class="fas ${icons[type] || icons.info} toast-icon"></i>
+                <div class="toast-content">
+                    ${title ? `<div class="toast-title">${title}</div>` : ''}
+                    <div class="toast-message">${message}</div>
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('toast-exit');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+            
+            toast.addEventListener('click', () => {
+                toast.classList.add('toast-exit');
+                setTimeout(() => toast.remove(), 300);
+            });
+        };
+        
+        window.formatDate = function(date) {
+            if (!date) return 'N/A';
+            const d = date instanceof Date ? date : new Date(date);
+            return d.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        };
+        
+        window.timeAgo = function(date) {
+            if (!date) return 'N/A';
+            const d = date instanceof Date ? date : new Date(date);
+            const now = new Date();
+            const diff = Math.floor((now - d) / 1000);
+            
+            if (diff < 60) return 'just now';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        };
+        
+        window.formatCurrency = function(amount, currency = 'GHS') {
+            if (amount === null || amount === undefined) return '₵0';
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: currency,
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        };
+        
+        window.escapeHtml = function(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        };
+        
+        // ============================================
+        // THEME TOGGLE
+        // ============================================
+        window.toggleTheme = function() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const icon = document.getElementById('theme-icon');
+            if (icon) {
+                icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        };
+        
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const icon = document.getElementById('theme-icon');
+            if (icon) {
+                icon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        }
+        
+        // ============================================
+        // LOAD CLIENT PORTAL
+        // ============================================
+        async function loadClientPortal() {
+            try {
+                // Load business settings from Firestore first
+                businessSettings = await loadBusinessSettingsFromFirestore();
+                window.businessSettings = businessSettings;
+                console.log('📋 Business settings loaded:', businessSettings);
+                
+                const module = await import('./js/pages/client-portal.js');
+                if (module.initClientPortal) {
+                    await module.initClientPortal(businessSettings);
+                } else {
+                    throw new Error('Client portal module does not export initClientPortal');
+                }
+            } catch (error) {
+                console.error('❌ Error loading client portal:', error);
+                const container = document.getElementById('client-portal-container');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="glass-card rounded-xl p-12 text-center max-w-md mx-auto">
+                            <div class="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-exclamation-triangle text-3xl" style="color: #ef4444;"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2" style="color: #ef4444;">Unable to Load Portal</h3>
+                            <p class="text-muted text-sm">${error.message}</p>
+                            <button onclick="location.reload()" class="btn-premium btn-premium-primary mt-4">
+                                <i class="fas fa-redo mr-1"></i> Try Again
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        // ============================================
+        // INITIALIZE
+        // ============================================
+        console.log('🔷 Client Portal v2.0');
+        console.log('📱 Loading premium client portal...');
+        console.log('🔑 Firebase app:', app.name);
+        
+        loadClientPortal();
+    </script>
+</body>
+</html>

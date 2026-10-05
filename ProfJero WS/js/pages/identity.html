@@ -1,0 +1,240 @@
+<!-- js/pages/identity.html -->
+<div class="space-y-6 animate-fade-in-up">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">
+                <i class="fas fa-id-card mr-3" style="color: var(--deep-blue);"></i>Identity Builder
+            </h1>
+            <p class="text-muted mt-1">Create professional resumes, CVs, bios, cover letters, and more from a single profile</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <button id="generate-identity-btn" class="px-5 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all transform hover:scale-[1.02]" style="background: linear-gradient(135deg, var(--deep-blue), var(--emerald)); color: white;">
+                <i class="fas fa-magic"></i> Generate
+            </button>
+            <button id="save-profile-btn" class="px-5 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all hover:shadow-md" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary);">
+                <i class="fas fa-save"></i> Save Profile
+            </button>
+            <button id="load-profile-btn" class="px-5 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all hover:shadow-md" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary);">
+                <i class="fas fa-upload"></i> Load Profile
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="glass-card rounded-xl p-4 transition-all hover:shadow-lg">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-muted">Templates</span>
+                <i class="fas fa-palette text-2xl" style="color: var(--deep-blue);"></i>
+            </div>
+            <div class="text-2xl md:text-3xl font-bold" id="template-count" style="color: var(--text-primary);">20</div>
+            <div class="text-xs text-muted mt-1">Available designs</div>
+        </div>
+        <div class="glass-card rounded-xl p-4 transition-all hover:shadow-lg">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-muted">Output Types</span>
+                <i class="fas fa-file-export text-2xl" style="color: var(--emerald);"></i>
+            </div>
+            <div class="text-2xl md:text-3xl font-bold" id="output-count" style="color: var(--emerald);">6</div>
+            <div class="text-xs text-muted mt-1">Formats supported</div>
+        </div>
+        <div class="glass-card rounded-xl p-4 transition-all hover:shadow-lg">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-muted">Resumes</span>
+                <i class="fas fa-file-alt text-2xl" style="color: #f59e0b;"></i>
+            </div>
+            <div class="text-2xl md:text-3xl font-bold" id="resume-count" style="color: #f59e0b;">0</div>
+            <div class="text-xs text-muted mt-1">Created</div>
+        </div>
+        <div class="glass-card rounded-xl p-4 transition-all hover:shadow-lg">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-muted">Cover Letters</span>
+                <i class="fas fa-envelope text-2xl" style="color: #8b5cf6;"></i>
+            </div>
+            <div class="text-2xl md:text-3xl font-bold" id="cover-count" style="color: #8b5cf6;">0</div>
+            <div class="text-xs text-muted mt-1">Generated</div>
+        </div>
+        <div class="glass-card rounded-xl p-4 transition-all hover:shadow-lg">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-muted">Profiles</span>
+                <i class="fas fa-user-circle text-2xl" style="color: #06b6d4;"></i>
+            </div>
+            <div class="text-2xl md:text-3xl font-bold" id="profile-count" style="color: #06b6d4;">0</div>
+            <div class="text-xs text-muted mt-1">Saved</div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Sidebar: Profile Form -->
+        <div class="lg:col-span-4">
+            <div class="glass-card rounded-2xl p-5 space-y-5 sticky top-24" style="max-height: calc(100vh - 120px); overflow-y: auto;">
+                <h2 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fas fa-user-edit" style="color: var(--deep-blue);"></i>
+                    Your Profile
+                </h2>
+                
+                <form id="identity-profile-form" class="space-y-4">
+                    <!-- Personal Info -->
+                    <div class="space-y-3">
+                        <div>
+                            <label class="form-label">Full Name</label>
+                            <input type="text" id="id-full-name" class="form-input" placeholder="Alex Rivera" value="Alex Rivera" />
+                        </div>
+                        <div>
+                            <label class="form-label">Job Title</label>
+                            <input type="text" id="id-job-title" class="form-input" placeholder="Senior Software Engineer" value="Senior Software Engineer" />
+                        </div>
+                        <div>
+                            <label class="form-label">Email</label>
+                            <input type="email" id="id-email" class="form-input" placeholder="alex@example.com" value="alex@example.com" />
+                        </div>
+                        <div>
+                            <label class="form-label">Phone</label>
+                            <input type="text" id="id-phone" class="form-input" placeholder="+1 234 567 8900" value="+1 234 567 8900" />
+                        </div>
+                        <div>
+                            <label class="form-label">Location</label>
+                            <input type="text" id="id-location" class="form-input" placeholder="San Francisco, CA" value="San Francisco, CA" />
+                        </div>
+                        <div>
+                            <label class="form-label">LinkedIn URL</label>
+                            <input type="url" id="id-linkedin" class="form-input" placeholder="https://linkedin.com/in/..." value="https://linkedin.com/in/alexrivera" />
+                        </div>
+                        <div>
+                            <label class="form-label">GitHub URL</label>
+                            <input type="url" id="id-github" class="form-input" placeholder="https://github.com/..." value="https://github.com/alexrivera" />
+                        </div>
+                    </div>
+
+                    <!-- Bio -->
+                    <div>
+                        <label class="form-label">Professional Summary</label>
+                        <textarea id="id-bio" rows="4" class="form-input resize-none" placeholder="Write a brief professional summary...">Senior Software Engineer with 8+ years of experience building scalable web applications. Passionate about clean code, system design, and mentoring junior developers. Led teams of 12 engineers across 3 continents.</textarea>
+                    </div>
+
+                    <!-- Skills -->
+                    <div>
+                        <label class="form-label">Skills (comma separated)</label>
+                        <input type="text" id="id-skills" class="form-input" placeholder="JavaScript, React, Node.js, Python, AWS, Docker" value="JavaScript, React, Node.js, Python, AWS, Docker, TypeScript, GraphQL" />
+                    </div>
+
+                    <!-- Experience -->
+                    <div>
+                        <label class="form-label">Experience</label>
+                        <textarea id="id-experience" rows="6" class="form-input resize-none" placeholder="Company, Title, Years, Description">TechCorp, Senior Software Engineer, 2020-2024, Led development of microservices architecture serving 10M+ users.
+StartupX, Tech Lead, 2018-2020, Built and scaled the core product from MVP to Series A.</textarea>
+                        <p class="text-xs text-muted mt-1">Format: Company, Title, Years, Description (one per line)</p>
+                    </div>
+
+                    <!-- Education -->
+                    <div>
+                        <label class="form-label">Education</label>
+                        <textarea id="id-education" rows="4" class="form-input resize-none" placeholder="University, Degree, Years">Stanford University, MS Computer Science, 2016-2018
+UC Berkeley, BS Computer Science, 2012-2016</textarea>
+                        <p class="text-xs text-muted mt-1">Format: University, Degree, Years (one per line)</p>
+                    </div>
+
+                    <!-- Certifications -->
+                    <div>
+                        <label class="form-label">Certifications</label>
+                        <input type="text" id="id-certifications" class="form-input" placeholder="AWS Certified Solutions Architect, PMP" value="AWS Certified Solutions Architect, Google Cloud Professional, Scrum Master" />
+                    </div>
+
+                    <!-- Languages -->
+                    <div>
+                        <label class="form-label">Languages</label>
+                        <input type="text" id="id-languages" class="form-input" placeholder="English (Native), Spanish (Fluent)" value="English (Native), Spanish (Fluent), French (Conversational)" />
+                    </div>
+
+                    <!-- Interests -->
+                    <div>
+                        <label class="form-label">Interests</label>
+                        <input type="text" id="id-interests" class="form-input" placeholder="Open source, Photography, Hiking" value="Open source, Photography, Hiking, Chess" />
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="lg:col-span-8 space-y-6">
+            <!-- Output Type Selector -->
+            <div class="glass-card rounded-2xl p-5">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-sm font-semibold text-muted mr-2">Generate:</span>
+                    <button class="output-type-btn active px-4 py-2 rounded-lg text-sm font-medium" data-type="resume" style="background: var(--deep-blue); color: white;">Resume</button>
+                    <button class="output-type-btn px-4 py-2 rounded-lg text-sm font-medium text-muted hover:bg-primary/10" data-type="cv">CV</button>
+                    <button class="output-type-btn px-4 py-2 rounded-lg text-sm font-medium text-muted hover:bg-primary/10" data-type="bio">Bio</button>
+                    <button class="output-type-btn px-4 py-2 rounded-lg text-sm font-medium text-muted hover:bg-primary/10" data-type="cover">Cover Letter</button>
+                    <button class="output-type-btn px-4 py-2 rounded-lg text-sm font-medium text-muted hover:bg-primary/10" data-type="linkedin">LinkedIn</button>
+                    <button class="output-type-btn px-4 py-2 rounded-lg text-sm font-medium text-muted hover:bg-primary/10" data-type="portfolio">Portfolio</button>
+                </div>
+            </div>
+
+            <!-- Template Categories -->
+            <div class="glass-card rounded-2xl p-5">
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <button class="category-btn active px-4 py-1.5 rounded-full text-sm font-medium" data-category="all" style="background: var(--deep-blue); color: white;">All</button>
+                    <button class="category-btn px-4 py-1.5 rounded-full text-sm font-medium text-muted hover:bg-primary/10" data-category="professional">Professional</button>
+                    <button class="category-btn px-4 py-1.5 rounded-full text-sm font-medium text-muted hover:bg-primary/10" data-category="creative">Creative</button>
+                    <button class="category-btn px-4 py-1.5 rounded-full text-sm font-medium text-muted hover:bg-primary/10" data-category="academic">Academic</button>
+                    <button class="category-btn px-4 py-1.5 rounded-full text-sm font-medium text-muted hover:bg-primary/10" data-category="industry">Industry</button>
+                </div>
+
+                <!-- Template Grid -->
+                <div id="template-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    <!-- Templates rendered by JS -->
+                </div>
+            </div>
+
+            <!-- Customization -->
+            <div class="glass-card rounded-2xl p-5">
+                <h3 class="font-semibold text-sm uppercase tracking-wider text-muted mb-4">Customize</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="form-label">Color</label>
+                        <div class="flex gap-2 flex-wrap">
+                            <button class="color-option w-8 h-8 rounded-full border-2" style="background:#004ac6; border-color: #004ac6;" data-color="#004ac6"></button>
+                            <button class="color-option w-8 h-8 rounded-full" style="background:#7c3aed" data-color="#7c3aed"></button>
+                            <button class="color-option w-8 h-8 rounded-full" style="background:#0891b2" data-color="#0891b2"></button>
+                            <button class="color-option w-8 h-8 rounded-full" style="background:#059669" data-color="#059669"></button>
+                            <button class="color-option w-8 h-8 rounded-full" style="background:#dc2626" data-color="#dc2626"></button>
+                            <button class="color-option w-8 h-8 rounded-full" style="background:#f59e0b" data-color="#f59e0b"></button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label">Font</label>
+                        <select id="font-select" class="form-input">
+                            <option value="Geist">Geist</option>
+                            <option value="Hanken Grotesk">Hanken Grotesk</option>
+                            <option value="JetBrains Mono">JetBrains Mono</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Header Style</label>
+                        <select id="header-style" class="form-input">
+                            <option value="centered">Centered</option>
+                            <option value="left">Left Aligned</option>
+                            <option value="right">Right Aligned</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Spacing</label>
+                        <select id="spacing" class="form-input">
+                            <option value="compact">Compact</option>
+                            <option value="normal" selected>Normal</option>
+                            <option value="relaxed">Relaxed</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generate Button -->
+            <button id="generate-identity-btn-main" class="w-full py-4 rounded-2xl font-bold text-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3" style="background: linear-gradient(135deg, var(--deep-blue), var(--emerald)); color: white;">
+                <i class="fas fa-magic"></i>
+                Generate Your Professional Identity
+            </button>
+        </div>
+    </div>
+</div>

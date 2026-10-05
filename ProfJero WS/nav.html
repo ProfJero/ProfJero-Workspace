@@ -1,0 +1,1001 @@
+<!-- index.html - Professional Bottom Navigation with Plain Background -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>ProfJero OS - Premium Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Light Mode (Default) */
+        :root {
+            --bg-primary: #f5f7fa;
+            --bg-secondary: #ffffff;
+            --text-primary: #1a1a2e;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --deep-blue: #0057D9;
+            --navy-blue: #0A1F44;
+            --emerald: #00A86B;
+            --gold: #F4B400;
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+        }
+
+        /* Dark Mode */
+        [data-theme="dark"] {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #141824;
+            --text-primary: #f0f0f0;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --deep-blue: #3b82f6;
+            --navy-blue: #1e293b;
+            --emerald: #10b981;
+            --gold: #fbbf24;
+            --glass-bg: rgba(20, 24, 36, 0.95);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --card-bg: #141824;
+            --border-color: #2d3748;
+        }
+
+        body {
+            background: var(--bg-primary);
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        /* Premium Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(100%); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes rotateIcon {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(90deg); }
+        }
+
+        @keyframes rotateBack {
+            from { transform: rotate(90deg); }
+            to { transform: rotate(0deg); }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateX(100%); }
+        }
+
+        .animate-fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+        .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* Bottom Navigation */
+        .bottom-nav-wrapper {
+            position: fixed;
+            bottom: 24px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .menu {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 12px 20px;
+            display: flex;
+            gap: 8px;
+            pointer-events: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .nav-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 16px;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            color: var(--text-secondary);
+            min-width: 60px;
+        }
+
+        .nav-link svg {
+            width: 24px;
+            height: 24px;
+            transition: all 0.2s ease;
+            fill: var(--text-secondary);
+        }
+
+        .nav-link span {
+            font-size: 11px;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(-5px);
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            color: var(--text-secondary);
+        }
+
+        /* Show label on hover (desktop) */
+        @media (min-width: 768px) {
+            .nav-link:hover span {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            .nav-link:hover {
+                background: rgba(0, 87, 217, 0.1);
+                transform: translateY(-2px);
+            }
+            .nav-link:hover svg {
+                fill: var(--deep-blue);
+            }
+        }
+
+        /* Active state */
+        .nav-link.active {
+            background: linear-gradient(135deg, var(--deep-blue), var(--emerald));
+            box-shadow: 0 4px 12px rgba(0, 87, 217, 0.3);
+        }
+
+        .nav-link.active svg {
+            fill: white;
+        }
+
+        .nav-link.active span {
+            opacity: 1;
+            transform: translateY(0);
+            color: white;
+        }
+
+        /* Expanded nav items for mobile */
+        .nav-link.expanded span {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Plus button special styling */
+        .nav-link.plus-btn {
+            background: rgba(0, 87, 217, 0.1);
+            border: 1px dashed var(--deep-blue);
+        }
+
+        .nav-link.plus-btn.active {
+            background: linear-gradient(135deg, var(--gold), var(--emerald));
+            border: none;
+        }
+
+        .rotate-plus {
+            animation: rotateIcon 0.3s ease forwards;
+        }
+
+        .rotate-plus-back {
+            animation: rotateBack 0.3s ease forwards;
+        }
+
+        /* Expanded menu items */
+        .expanded-menu-items {
+            display: none;
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 12px;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 90vw;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 55;
+        }
+
+        .expanded-menu-items.show {
+            display: flex;
+            animation: slideUp 0.3s ease;
+        }
+
+        .expanded-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+            min-width: 70px;
+        }
+
+        .expanded-item svg {
+            width: 22px;
+            height: 22px;
+            fill: var(--text-secondary);
+        }
+
+        .expanded-item span {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .expanded-item:hover {
+            background: rgba(0, 87, 217, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .expanded-item:hover svg {
+            fill: var(--deep-blue);
+        }
+
+        /* Theme Toggle Switch */
+        .theme-switch {
+            position: relative;
+            width: 60px;
+            height: 32px;
+            background: var(--bg-secondary);
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 8px;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .theme-switch svg {
+            width: 16px;
+            height: 16px;
+            z-index: 2;
+        }
+
+        .theme-switch .sun-icon {
+            color: var(--gold);
+        }
+
+        .theme-switch .moon-icon {
+            color: var(--deep-blue);
+        }
+
+        .theme-switch-knob {
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            background: linear-gradient(135deg, var(--deep-blue), var(--emerald));
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            top: 3px;
+            left: 3px;
+        }
+
+        .theme-switch[data-theme="dark"] .theme-switch-knob {
+            transform: translateX(28px);
+        }
+
+        /* User Dropdown Menu */
+        .user-dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 12px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 8px;
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 60;
+        }
+
+        .dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-primary);
+        }
+
+        .dropdown-item:hover {
+            background: rgba(0, 87, 217, 0.1);
+        }
+
+        .dropdown-item.danger {
+            color: #ef4444;
+        }
+
+        .dropdown-item.danger:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Main Content */
+        .main-container {
+            padding-bottom: 100px;
+            min-height: 100vh;
+        }
+
+        /* Premium Header */
+        .premium-header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Glass Card Effect */
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 30px -15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: var(--deep-blue); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--emerald); }
+
+        /* Loader */
+        .premium-loader {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(0, 87, 217, 0.2);
+            border-top: 3px solid var(--deep-blue);
+            border-radius: 50%;
+            animation: spin 0.8s ease infinite;
+        }
+
+        /* Toast */
+        .toast-notification {
+            animation: slideInRight 0.3s ease-out, fadeOut 0.3s ease-out 2.7s forwards;
+            border-radius: 16px;
+        }
+
+        /* FAB */
+        .fab-premium {
+            position: fixed;
+            bottom: 100px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 28px;
+            background: linear-gradient(135deg, var(--deep-blue), var(--emerald));
+            box-shadow: 0 8px 20px rgba(0, 87, 217, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 35;
+        }
+
+        .fab-premium:hover {
+            transform: scale(1.1) rotate(90deg);
+        }
+
+        .fab-premium i {
+            color: white;
+            font-size: 20px;
+        }
+
+        /* Page Transition */
+        .page-content {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        /* Text colors */
+        .text-primary { color: var(--text-primary); }
+        .text-secondary { color: var(--text-secondary); }
+        .text-muted { color: var(--text-muted); }
+        .border-custom { border-color: var(--border-color); }
+        .bg-card { background: var(--card-bg); }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Loading Screen -->
+        <div id="loading" class="fixed inset-0 flex items-center justify-center z-50" style="background: var(--bg-primary);">
+            <div class="text-center animate-fade-in-up">
+                <div class="relative w-24 h-24 mx-auto mb-6">
+                    <div class="premium-loader absolute inset-0"></div>
+                    <i class="fas fa-brain text-4xl absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" style="color: var(--deep-blue);"></i>
+                </div>
+                <h2 class="text-2xl font-bold mb-2" style="color: var(--text-primary);">ProfJero OS</h2>
+                <p class="text-sm" style="color: var(--text-muted);">Loading your workspace...</p>
+            </div>
+        </div>
+        
+        <!-- Main Application -->
+        <div id="main-content" class="hidden relative">
+            <!-- Header -->
+            <header class="premium-header fixed top-0 left-0 right-0 z-30">
+                <div class="px-5 md:px-8 py-3 md:py-4 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 md:w-11 md:h-11 rounded-xl flex items-center justify-center shadow-lg" style="background: linear-gradient(135deg, var(--deep-blue), var(--emerald));">
+                            <i class="fas fa-brain text-white text-base md:text-xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-lg md:text-xl font-bold" style="color: var(--deep-blue);">ProfJero OS</span>
+                            <p class="text-xs hidden md:block" style="color: var(--text-muted);">Your Personal Operating System</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-3 md:gap-4">
+                        <!-- Theme Switch with Sun/Moon Icons -->
+                        <div class="theme-switch" id="theme-switch">
+                            <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2.25a.75.75 0 0 1 .75.75v.75a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM5.636 4.222a.75.75 0 0 1 1.06 0l.53.53a.75.75 0 0 1-1.06 1.06l-.53-.53a.75.75 0 0 1 0-1.06Zm12.728 0a.75.75 0 0 1 0 1.06l-.53.53a.75.75 0 1 1-1.06-1.06l.53-.53a.75.75 0 0 1 1.06 0ZM2.25 12a.75.75 0 0 1 .75-.75h.75a.75.75 0 0 1 0 1.5H3a.75.75 0 0 1-.75-.75Zm18 0a.75.75 0 0 1 .75-.75h.75a.75.75 0 0 1 0 1.5H21a.75.75 0 0 1-.75-.75ZM5.636 17.364a.75.75 0 0 1 1.06 0l.53.53a.75.75 0 0 1-1.06 1.06l-.53-.53a.75.75 0 0 1 0-1.06Zm12.728 0a.75.75 0 0 1 0 1.06l-.53.53a.75.75 0 0 1-1.06-1.06l.53-.53a.75.75 0 0 1 1.06 0Z"/>
+                            </svg>
+                            <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z" clip-rule="evenodd"/>
+                            </svg>
+                            <div class="theme-switch-knob"></div>
+                        </div>
+                        
+                        <!-- User Dropdown -->
+                        <div class="user-dropdown" id="user-dropdown">
+                            <div class="flex items-center gap-3 cursor-pointer" id="user-menu-btn">
+                                <div class="text-right hidden sm:block">
+                                    <p id="user-name" class="text-sm font-semibold" style="color: var(--text-primary);">User</p>
+                                    <p id="user-email" class="text-xs" style="color: var(--text-muted);">user@example.com</p>
+                                </div>
+                                <img id="user-avatar" class="w-9 h-9 md:w-11 md:h-11 rounded-full object-cover ring-2" style="ring-color: var(--deep-blue);" src="https://via.placeholder.com/44" alt="Avatar">
+                            </div>
+                            <div class="dropdown-menu" id="dropdown-menu">
+                                <div class="dropdown-item" id="profile-btn">
+                                    <i class="fas fa-user-circle"></i>
+                                    <span>Profile</span>
+                                </div>
+                                <div class="dropdown-item" id="settings-btn">
+                                    <i class="fas fa-cog"></i>
+                                    <span>Settings</span>
+                                </div>
+                                <div class="dropdown-item danger" id="logout-btn">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>Logout</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main Content -->
+            <div class="main-container pt-20 md:pt-24">
+                <main id="page-content" class="page-content px-5 md:px-8 py-6">
+                    <!-- Dynamic content -->
+                </main>
+            </div>
+            
+            <!-- Bottom Navigation -->
+            <div class="bottom-nav-wrapper">
+                <div class="menu animate-slide-up">
+                    <div data-page="dashboard" class="nav-link active" id="nav-dashboard">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M11.47 3.841a.75.75 0 0 1 1.06 0l8.69 8.69a.75.75 0 1 0 1.06-1.061l-8.689-8.69a2.25 2.25 0 0 0-3.182 0l-8.69 8.69a.75.75 0 0 0 1.061 1.06l8.69-8.689Z"/>
+                            <path d="m12 5.432 8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 0 1-.75-.75v-4.5a.75.75 0 0 0-.75-.75h-3a.75.75 0 0 0-.75.75V21a.75.75 0 0 1-.75.75H5.625a1.875 1.875 0 0 1-1.875-1.875v-6.198a2.29 2.29 0 0 0 .091-.086L12 5.432Z"/>
+                        </svg>
+                        <span>Overview</span>
+                    </div>
+                    <div data-page="tasks" class="nav-link" id="nav-tasks">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19.5 21a3 3 0 0 0 3-3v-4.5a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3V18a3 3 0 0 0 3 3h15ZM1.5 10.146V6a3 3 0 0 1 3-3h5.379a2.25 2.25 0 0 1 1.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 0 1 3 3v1.146A4.483 4.483 0 0 0 19.5 9h-15a4.483 4.483 0 0 0-3 1.146Z"/>
+                        </svg>
+                        <span>Tasks</span>
+                    </div>
+                    <div data-page="projects" class="nav-link" id="nav-projects">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 3v1.5h9V3A.75.75 0 0 1 18 3v1.5h.75a3 3 0 0 1 3 3v11.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V7.5a3 3 0 0 1 3-3H6V3a.75.75 0 0 1 .75-.75Zm13.5 9a1.5 1.5 0 0 0-1.5-1.5H5.25a1.5 1.5 0 0 0-1.5 1.5v7.5a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5v-7.5Z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>Projects</span>
+                    </div>
+                    <div data-page="notes" class="nav-link" id="nav-notes">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M21.731 2.269a2.625 2.625 0 0 0-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 0 0 0-3.712ZM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 0 0-1.32 2.214l-.8 2.685a.75.75 0 0 0 .933.933l2.685-.8a5.25 5.25 0 0 0 2.214-1.32l8.4-8.4Z"/>
+                            <path d="M5.25 5.25a3 3 0 0 0-3 3v10.5a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3V13.5a.75.75 0 0 0-1.5 0v5.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5V8.25a1.5 1.5 0 0 1 1.5-1.5h5.25a.75.75 0 0 0 0-1.5H5.25Z"/>
+                        </svg>
+                        <span>Notes</span>
+                    </div>
+                    <div data-page="finance" class="nav-link" id="nav-finance">
+                        <!-- Better Finance Icon - Wallet with currency symbol -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M2.273 5.625A4.483 4.483 0 0 1 5.25 4.5h13.5c1.141 0 2.183.425 2.977 1.125A3 3 0 0 0 18.75 3H5.25a3 3 0 0 0-2.977 2.625ZM2.273 8.625A4.483 4.483 0 0 1 5.25 7.5h13.5c1.141 0 2.183.425 2.977 1.125A3 3 0 0 0 18.75 6H5.25a3 3 0 0 0-2.977 2.625ZM5.25 9a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h13.5a3 3 0 0 0 3-3v-6a3 3 0 0 0-3-3H5.25ZM15 13.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
+                        </svg>
+                        <span>Finance</span>
+                    </div>
+                    <div class="nav-link plus-btn" id="nav-plus">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path fill-rule="evenodd" d="M12 3.75a.75.75 0 0 1 .75.75v6.75h6.75a.75.75 0 0 1 0 1.5h-6.75v6.75a.75.75 0 0 1-1.5 0v-6.75H4.5a.75.75 0 0 1 0-1.5h6.75V4.5a.75.75 0 0 1 .75-.75Z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>More</span>
+                    </div>
+                </div>
+                
+                <!-- Expanded Menu Items -->
+                <div class="expanded-menu-items" id="expanded-menu">
+                    <div class="expanded-item" data-page="goals">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2.25a.75.75 0 0 1 .75.75v.75a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM5.636 4.222a.75.75 0 0 1 1.06 0l.53.53a.75.75 0 0 1-1.06 1.06l-.53-.53a.75.75 0 0 1 0-1.06Zm12.728 0a.75.75 0 0 1 0 1.06l-.53.53a.75.75 0 1 1-1.06-1.06l.53-.53a.75.75 0 0 1 1.06 0Z"/>
+                            <path d="M12 6.75a5.25 5.25 0 1 0 0 10.5 5.25 5.25 0 0 0 0-10.5Z"/>
+                        </svg>
+                        <span>Goals</span>
+                    </div>
+                    <div class="expanded-item" data-page="calendar">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6.75 2.25A.75.75 0 0 1 7.5 3v1.5h9V3A.75.75 0 0 1 18 3v1.5h.75a3 3 0 0 1 3 3v11.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V7.5a3 3 0 0 1 3-3H6V3a.75.75 0 0 1 .75-.75Zm13.5 9a1.5 1.5 0 0 0-1.5-1.5H5.25a1.5 1.5 0 0 0-1.5 1.5v7.5a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5v-7.5Z"/>
+                        </svg>
+                        <span>Calendar</span>
+                    </div>
+                    <div class="expanded-item" data-page="learning">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M11.7 2.805a.75.75 0 0 1 .6 0A60.65 60.65 0 0 1 22.83 8.72a.75.75 0 0 1-.231 1.337 49.949 49.949 0 0 0-9.902 3.912l-.003.002-.34.18a.75.75 0 0 1-.707 0A50.009 50.009 0 0 0 7.5 12.173v-.224c0-.131.067-.248.172-.311a54.614 54.614 0 0 1 4.653-2.52.75.75 0 0 0-.65-1.352 56.129 56.129 0 0 0-4.78 2.589 1.858 1.858 0 0 0-.859 1.228 49.803 49.803 0 0 0-4.634-1.527.75.75 0 0 1-.231-1.337A60.653 60.653 0 0 1 11.7 2.805Z"/>
+                            <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+                        </svg>
+                        <span>Learning</span>
+                    </div>
+                    <div class="expanded-item" data-page="ideas">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 .75a8.25 8.25 0 0 0-4.135 15.39c.686.398 1.115 1.008 1.115 1.86v.75a.75.75 0 0 0 .75.75h4.5a.75.75 0 0 0 .75-.75v-.75c0-.852.429-1.462 1.115-1.86A8.25 8.25 0 0 0 12 .75Z"/>
+                            <path d="M9 21.75a.75.75 0 0 0 .75.75h4.5a.75.75 0 0 0 0-1.5h-4.5a.75.75 0 0 0-.75.75Z"/>
+                        </svg>
+                        <span>Idea Vault</span>
+                    </div>
+                    <div class="expanded-item" data-page="client-mgt">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M4.5 6.375a4.125 4.125 0 1 1 8.25 0 4.125 4.125 0 0 1-8.25 0ZM14.25 8.625a3.375 3.375 0 1 1 6.75 0 3.375 3.375 0 0 1-6.75 0ZM1.5 19.125a7.125 7.125 0 0 1 14.25 0v.003l-.001.119a.75.75 0 0 1-.363.63 13.067 13.067 0 0 1-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 0 1-.364-.63l-.001-.122ZM17.25 19.128l-.001.144a2.25 2.25 0 0 1-.233.96 10.088 10.088 0 0 0 5.06-1.01.75.75 0 0 0 .42-.643 4.875 4.875 0 0 0-6.957-4.611 8.586 8.586 0 0 1 1.71 5.157v.003Z"/>
+                        </svg>
+                        <span>Clients</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FAB -->
+            <div id="fab" class="fab-premium hidden">
+                <i class="fas fa-plus"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-28 md:bottom-28 right-4 left-4 md:left-auto z-50 space-y-2"></div>
+    
+    <!-- Modal Container -->
+    <div id="modal-container" class="fixed inset-0 z-50 pointer-events-none"></div>
+    
+    <script type="module">
+        import { auth, onAuthStateChanged, signOut, db, doc, getDoc } from './js/firebase-config.js';
+        
+        let currentPage = 'dashboard';
+        let currentUser = null;
+        
+        // Theme handling with proper sun/moon icons
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const switchEl = document.getElementById('theme-switch');
+            if (savedTheme === 'dark') {
+                switchEl.setAttribute('data-theme', 'dark');
+                document.documentElement.classList.add('dark');
+            } else {
+                switchEl.removeAttribute('data-theme');
+                document.documentElement.classList.remove('dark');
+            }
+        }
+        
+        function toggleTheme() {
+            const switchEl = document.getElementById('theme-switch');
+            const isDark = switchEl.getAttribute('data-theme') === 'dark';
+            const newTheme = isDark ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            if (newTheme === 'dark') {
+                switchEl.setAttribute('data-theme', 'dark');
+                document.documentElement.classList.add('dark');
+            } else {
+                switchEl.removeAttribute('data-theme');
+                document.documentElement.classList.remove('dark');
+            }
+        }
+        
+        // User dropdown
+        function setupUserDropdown() {
+            const userBtn = document.getElementById('user-menu-btn');
+            const dropdown = document.getElementById('dropdown-menu');
+            
+            userBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('show');
+            });
+            
+            document.addEventListener('click', () => {
+                dropdown.classList.remove('show');
+            });
+            
+            document.getElementById('logout-btn').addEventListener('click', handleLogout);
+            document.getElementById('profile-btn').addEventListener('click', () => {
+                showToast('Profile feature coming soon!', 'info');
+                dropdown.classList.remove('show');
+            });
+            document.getElementById('settings-btn').addEventListener('click', () => {
+                showToast('Settings feature coming soon!', 'info');
+                dropdown.classList.remove('show');
+            });
+        }
+        
+        // Plus button functionality
+        function setupPlusButton() {
+            const plusBtn = document.getElementById('nav-plus');
+            const expandedMenu = document.getElementById('expanded-menu');
+            let isExpanded = false;
+            
+            plusBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                isExpanded = !isExpanded;
+                
+                if (isExpanded) {
+                    expandedMenu.classList.add('show');
+                    plusBtn.querySelector('svg').classList.add('rotate-plus');
+                    plusBtn.classList.add('active');
+                } else {
+                    expandedMenu.classList.remove('show');
+                    plusBtn.querySelector('svg').classList.add('rotate-plus-back');
+                    setTimeout(() => {
+                        plusBtn.querySelector('svg').classList.remove('rotate-plus', 'rotate-plus-back');
+                    }, 300);
+                    plusBtn.classList.remove('active');
+                }
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (!plusBtn.contains(e.target) && !expandedMenu.contains(e.target)) {
+                    expandedMenu.classList.remove('show');
+                    isExpanded = false;
+                    plusBtn.classList.remove('active');
+                }
+            });
+            
+            document.querySelectorAll('.expanded-item').forEach(item => {
+                item.addEventListener('click', async () => {
+                    const page = item.getAttribute('data-page');
+                    expandedMenu.classList.remove('show');
+                    isExpanded = false;
+                    plusBtn.classList.remove('active');
+                    
+                    if (page !== currentPage) {
+                        // Check if it's a valid page
+                        const validPages = ['dashboard', 'tasks', 'projects', 'notes', 'finance', 'goals', 'calendar', 'learning', 'ideas', 'client-mgt'];
+                        if (validPages.includes(page)) {
+                            // Create temporary nav item to trigger navigation
+                            const tempNav = document.querySelector(`[data-page="${page}"]`);
+                            if (tempNav) {
+                                tempNav.click();
+                            } else {
+                                // If no nav item exists, navigate directly
+                                updateActiveNav(page);
+                                currentPage = page;
+                                await loadPage(page);
+                                window.history.pushState({ page }, '', `#${page}`);
+                            }
+                        } else {
+                            showToast(`${page.replace('-', ' ').charAt(0).toUpperCase() + page.slice(1)} feature coming soon!`, 'info');
+                        }
+                    }
+                });
+            });
+        }
+        
+        function setupNavigation() {
+            document.querySelectorAll('.nav-link:not(.plus-btn)').forEach(item => {
+                item.addEventListener('click', async (e) => {
+                    const page = item.getAttribute('data-page');
+                    if (page === currentPage) return;
+                    
+                    // Close expanded menu if open
+                    document.getElementById('expanded-menu').classList.remove('show');
+                    document.getElementById('nav-plus')?.classList.remove('active');
+                    
+                    updateActiveNav(page);
+                    currentPage = page;
+                    await loadPage(page);
+                    window.history.pushState({ page }, '', `#${page}`);
+                });
+            });
+        }
+        
+        function updateActiveNav(page) {
+            document.querySelectorAll('.nav-link').forEach(item => {
+                item.classList.remove('active');
+            });
+            const activeNav = document.querySelector(`[data-page="${page}"]`);
+            if (activeNav) {
+                activeNav.classList.add('active');
+            }
+        }
+        
+        function showLoading() {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('main-content').classList.add('hidden');
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+        }
+        
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const colors = {
+                success: 'linear-gradient(135deg, var(--emerald), var(--deep-blue))',
+                error: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                info: 'linear-gradient(135deg, var(--deep-blue), var(--navy-blue))',
+                warning: 'linear-gradient(135deg, var(--gold), #ea580c)'
+            };
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                info: 'fa-info-circle',
+                warning: 'fa-exclamation-triangle'
+            };
+            toast.className = `toast-notification text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3`;
+            toast.style.background = colors[type];
+            toast.innerHTML = `<i class="fas ${icons[type]} text-lg"></i><span class="text-sm font-medium">${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        async function loadPage(pageName) {
+    const pageContent = document.getElementById('page-content');
+    
+    // Animate out
+    pageContent.style.opacity = '0';
+    pageContent.style.transform = 'translateY(20px)';
+    
+    setTimeout(async () => {
+        try {
+            let content = '';
+            switch(pageName) {
+                case 'dashboard':
+                    const { renderDashboard, loadDashboardData } = await import('./js/pages/dashboard.js');
+                    content = await renderDashboard(currentUser);
+                    pageContent.innerHTML = content;
+                    setTimeout(async () => { 
+                        await loadDashboardData();
+                    }, 100);
+                    break;
+                    
+                case 'tasks':
+                    const { renderTasksPage, loadTasksData } = await import('./js/pages/tasks.js');
+                    content = await renderTasksPage(currentUser);
+                    pageContent.innerHTML = content;
+                    setTimeout(async () => { 
+                        await loadTasksData();
+                    }, 100);
+                    break;
+                    
+                case 'projects':
+                    const { renderProjectsPage, loadProjectsData } = await import('./js/pages/projects.js');
+                    content = await renderProjectsPage(currentUser);
+                    pageContent.innerHTML = content;
+                    setTimeout(async () => { 
+                        await loadProjectsData();
+                    }, 100);
+                    break;
+                    
+                case 'notes':
+                    const { renderNotesPage, loadNotesData } = await import('./js/pages/notes.js');
+                    content = await renderNotesPage(currentUser);
+                    pageContent.innerHTML = content;
+                    setTimeout(async () => { 
+                        await loadNotesData();
+                    }, 100);
+                    break;
+                    
+                case 'finance':
+                    const { renderFinancePage, loadFinanceData } = await import('./js/pages/finance.js');
+                    content = await renderFinancePage(currentUser);
+                    pageContent.innerHTML = content;
+                    setTimeout(async () => { 
+                        await loadFinanceData();
+                    }, 100);
+                    break;
+                    
+                case 'goals':
+                case 'calendar':
+                case 'learning':
+                case 'ideas':
+                case 'client-mgt':
+                    const pageTitles = {
+                        goals: 'Goals',
+                        calendar: 'Calendar',
+                        learning: 'Learning & Growth',
+                        ideas: 'Idea Vault',
+                        'client-mgt': 'Client Management'
+                    };
+                    const pageIcons = {
+                        goals: 'bullseye',
+                        calendar: 'calendar-alt',
+                        learning: 'graduation-cap',
+                        ideas: 'lightbulb',
+                        'client-mgt': 'users'
+                    };
+                    content = `
+                        <div class="text-center py-20">
+                            <i class="fas fa-${pageIcons[pageName]} text-6xl mb-4" style="color: var(--deep-blue);"></i>
+                            <h2 class="text-2xl font-bold mb-2" style="color: var(--text-primary);">${pageTitles[pageName]}</h2>
+                            <p class="text-muted">This feature is coming soon!</p>
+                        </div>
+                    `;
+                    pageContent.innerHTML = content;
+                    break;
+                    
+                default:
+                    content = '<div class="text-center py-20">Page not found</div>';
+                    pageContent.innerHTML = content;
+            }
+            
+            // Handle FAB visibility
+            const fab = document.getElementById('fab');
+            if (['tasks', 'notes'].includes(pageName)) {
+                fab.classList.remove('hidden');
+                fab.onclick = () => {
+                    if (pageName === 'tasks') {
+                        window.TasksApp.showAddModal();
+                    } else if (pageName === 'notes') {
+                        showToast(`Create new note`, 'info');
+                    }
+                };
+            } else {
+                fab.classList.add('hidden');
+            }
+            
+            // Animate in
+            pageContent.style.opacity = '1';
+            pageContent.style.transform = 'translateY(0)';
+            
+        } catch (error) {
+            console.error(`Error loading ${pageName}:`, error);
+            pageContent.innerHTML = `<div class="text-center py-20 text-red-600">Failed to load page. Please try again.</div>`;
+            pageContent.style.opacity = '1';
+        }
+    }, 200);
+}
+        
+        async function handleLogout() {
+            try {
+                await signOut(auth);
+                showToast('Logged out successfully', 'success');
+                setTimeout(() => window.location.href = '/login.html', 1000);
+            } catch (error) {
+                showToast('Error logging out', 'error');
+            }
+        }
+        
+        async function loadUserData(user) {
+            try {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                return userDoc.exists() ? userDoc.data() : null;
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                return null;
+            }
+        }
+        
+        function updateUserUI(user, userData) {
+            const userName = document.getElementById('user-name');
+            const userEmail = document.getElementById('user-email');
+            const userAvatar = document.getElementById('user-avatar');
+            
+            if (userName) userName.textContent = userData?.displayName || user.displayName || user.email.split('@')[0];
+            if (userEmail) userEmail.textContent = user.email;
+            if (userAvatar && user.photoURL) userAvatar.src = user.photoURL;
+        }
+        
+        async function init() {
+            initTheme();
+            document.getElementById('theme-switch').addEventListener('click', toggleTheme);
+            setupUserDropdown();
+            setupPlusButton();
+            
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUser = user;
+                    const userData = await loadUserData(user);
+                    updateUserUI(user, userData);
+                    setupNavigation();
+                    
+                    const hash = window.location.hash.slice(1);
+                    const validPages = ['dashboard', 'tasks', 'projects', 'notes', 'finance', 'goals', 'calendar', 'learning', 'ideas', 'client-mgt'];
+                    if (hash && validPages.includes(hash)) {
+                        currentPage = hash;
+                    }
+                    updateActiveNav(currentPage);
+                    await loadPage(currentPage);
+                    hideLoading();
+                    
+                    window.addEventListener('popstate', async (e) => {
+                        const page = e.state?.page || 'dashboard';
+                        if (page !== currentPage) {
+                            currentPage = page;
+                            updateActiveNav(page);
+                            await loadPage(page);
+                        }
+                    });
+                } else {
+                    window.location.href = '/login.html';
+                }
+            });
+        }
+        
+        init();
+    </script>
+</body>
+</html>
