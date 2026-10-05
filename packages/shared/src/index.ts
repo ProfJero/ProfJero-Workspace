@@ -14,3 +14,4 @@ export * from './finance/planning';
 export * from './finance/invoices';
 export * from './finance/health';
 export * from './finance/insights';
+export * from './intelligence';

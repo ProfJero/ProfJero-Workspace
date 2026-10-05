@@ -1,0 +1,17 @@
+{
+  "indexes": [
+    { "collectionGroup": "members", "queryScope": "COLLECTION_GROUP", "fields": [{ "fieldPath": "uid", "order": "ASCENDING" }, { "fieldPath": "status", "order": "ASCENDING" }] },
+    { "collectionGroup": "members", "queryScope": "COLLECTION_GROUP", "fields": [{ "fieldPath": "uid", "order": "ASCENDING" }, { "fieldPath": "role", "order": "ASCENDING" }] },
+    { "collectionGroup": "members", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "email", "order": "ASCENDING" }, { "fieldPath": "status", "order": "ASCENDING" }] },
+    { "collectionGroup": "invitations", "queryScope": "COLLECTION_GROUP", "fields": [{ "fieldPath": "email", "order": "ASCENDING" }, { "fieldPath": "status", "order": "ASCENDING" }] },
+    { "collectionGroup": "invitations", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "email", "order": "ASCENDING" }, { "fieldPath": "status", "order": "ASCENDING" }] },
+    { "collectionGroup": "transactions", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "debtId", "order": "ASCENDING" }, { "fieldPath": "status", "order": "ASCENDING" }] },
+    { "collectionGroup": "invoices", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "clientId", "order": "ASCENDING" }, { "fieldPath": "status", "order": "ASCENDING" }] },
+    { "collectionGroup": "paymentNotices", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "clientId", "order": "ASCENDING" }, { "fieldPath": "status", "order": "ASCENDING" }] },
+    { "collectionGroup": "paymentNotices", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "invoiceId", "order": "ASCENDING" }, { "fieldPath": "status", "order": "ASCENDING" }] },
+    { "collectionGroup": "portalTokens", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "tenantId", "order": "ASCENDING" }, { "fieldPath": "clientId", "order": "ASCENDING" }, { "fieldPath": "revoked", "order": "ASCENDING" }] },
+    { "collectionGroup": "clientInteractions", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "clientId", "order": "ASCENDING" }, { "fieldPath": "date", "order": "DESCENDING" }] },
+    { "collectionGroup": "savingsContributions", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "goalId", "order": "ASCENDING" }, { "fieldPath": "date", "order": "DESCENDING" }] }
+  ],
+  "fieldOverrides": []
+}

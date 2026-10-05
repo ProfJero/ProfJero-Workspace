@@ -71,6 +71,13 @@ export function createDoc<T extends Record<string, unknown>>(tenantId: string, n
   return ref.id;
 }
 
+/** Create with a caller-chosen id (for natural keys such as habitId_date). The caller must know the doc does not exist yet. */
+export function createDocWithId<T extends Record<string, unknown>>(tenantId: string, name: ClientCollectionName, id: string, data: T): void {
+  const parsed = schemaFor(name).parse(data);
+  const me = uid();
+  void setDoc(tenantDoc(tenantId, name, id), { ...parsed, createdBy: me, updatedBy: me, createdAt: serverTimestamp(), updatedAt: serverTimestamp() }).catch(report);
+}
+
 export function updateDocFields<T extends Record<string, unknown>>(tenantId: string, name: ClientCollectionName, id: string, changes: Partial<T>): void {
   const parsed = schemaFor(name).partial().parse(changes);
   void updateDoc(tenantDoc(tenantId, name, id), { ...parsed, updatedBy: uid(), updatedAt: serverTimestamp() }).catch(report);

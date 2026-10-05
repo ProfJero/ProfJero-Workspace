@@ -208,7 +208,7 @@ export function StatTile({ label, value, sub, tone }: { label: string; value: Re
   return (
     <div className="min-w-0 rounded-xl border border-line bg-surface p-4 shadow-xs">
       <p className="text-xs font-medium text-muted">{label}</p>
-      <p className={clsx('mt-1 truncate text-xl font-semibold sm:text-2xl', tone === 'good' && 'text-good-ink', tone === 'critical' && 'text-critical-ink')}>{value}</p>
+      <p className={clsx('mt-1 break-words text-lg font-semibold leading-tight sm:text-2xl', tone === 'good' && 'text-good-ink', tone === 'critical' && 'text-critical-ink')}>{value}</p>
       {sub && <p className="mt-1 text-xs text-ink-2">{sub}</p>}
     </div>
   );
