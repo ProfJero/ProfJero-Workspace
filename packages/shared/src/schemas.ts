@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { isIsoDate } from './dates';
-import { CURRENCY_CODES } from './money';
+import { CURRENCY_CODES, type CurrencyCode } from './money';
 import { ROLES } from './permissions';
 import {
   CLIENT_STATUSES,
@@ -32,7 +32,7 @@ export const zWallTime = z
 export const zTime = z.string().regex(new RegExp(TIME_PATTERN), 'Use HH:mm');
 export const text = (max: number) => z.string().trim().max(max);
 export const requiredText = (max: number) => z.string().trim().min(1, 'Required').max(max);
-export const zCurrency = z.enum(CURRENCY_CODES as [string, ...string[]]);
+export const zCurrency = z.enum(CURRENCY_CODES as [CurrencyCode, ...CurrencyCode[]]);
 export const zMinorPositive = z.number().int().min(1).max(100_000_000_000_000);
 export const zMinorNonNegative = z.number().int().min(0).max(100_000_000_000_000);
 export const zMinorSigned = z.number().int().min(-100_000_000_000_000).max(100_000_000_000_000);

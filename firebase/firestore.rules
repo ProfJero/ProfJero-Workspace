@@ -1,0 +1,535 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// GENERATED FILE — do not edit. Source: firebase/*.rules.template and
+// packages/shared (permissions, collections, schemas). Run `npm run rules`.
+// ─────────────────────────────────────────────────────────────────────────────
+rules_version = '2';
+
+// Tenant isolation model
+// ──────────────────────
+// Every tenant-owned document lives under tenants/{tenantId}/…; access is
+// granted only to users with an ACTIVE membership document at
+// tenants/{tenantId}/members/{uid}. Membership documents are written only by
+// Cloud Functions, so a client can never grant itself access or a role.
+// Nothing here trusts tenantId/userId/role values sent in a request body.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function memberPath(tenantId) {
+      return /databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid);
+    }
+
+    function isActiveMember(tenantId) {
+      return signedIn() && exists(memberPath(tenantId)) && get(memberPath(tenantId)).data.status == 'active';
+    }
+
+    function hasPerm(tenantId, roles) {
+      return isActiveMember(tenantId) && get(memberPath(tenantId)).data.role in roles;
+    }
+
+    // Server-managed metadata on every client-written document.
+    function createMeta() {
+      let d = request.resource.data;
+      return d.createdBy == request.auth.uid && d.updatedBy == request.auth.uid
+        && d.createdAt == request.time && d.updatedAt == request.time;
+    }
+
+    function updateMeta() {
+      let d = request.resource.data;
+      return d.createdBy == resource.data.createdBy && d.createdAt == resource.data.createdAt
+        && d.updatedBy == request.auth.uid && d.updatedAt == request.time;
+    }
+
+    function valid_tasks(d) {
+      return d.keys().hasOnly(['title', 'description', 'status', 'priority', 'dueDate', 'dueTime', 'projectId', 'goalId', 'assigneeId', 'labels', 'recurrence', 'completedOn', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && d.keys().hasAll(['title', 'description', 'status', 'priority', 'dueDate', 'dueTime', 'projectId', 'goalId', 'assigneeId', 'labels', 'recurrence', 'completedOn', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && (d.title is string && d.title.size() >= 1 && d.title.size() <= 200)
+        && (d.description is string && d.description.size() <= 5000)
+        && (d.status is string && d.status in ['todo', 'in_progress', 'blocked', 'done', 'cancelled'])
+        && (d.priority is string && d.priority in ['low', 'medium', 'high', 'urgent'])
+        && ((d.dueDate is string && d.dueDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')) || d.dueDate == null)
+        && ((d.dueTime is string && d.dueTime.matches('^[0-9]{2}:[0-9]{2}$')) || d.dueTime == null)
+        && ((d.projectId is string && d.projectId.matches('^[A-Za-z0-9_-]{1,128}$')) || d.projectId == null)
+        && ((d.goalId is string && d.goalId.matches('^[A-Za-z0-9_-]{1,128}$')) || d.goalId == null)
+        && ((d.assigneeId is string && d.assigneeId.matches('^[A-Za-z0-9_-]{1,128}$')) || d.assigneeId == null)
+        && (d.labels is list && d.labels.size() <= 20)
+        && ((d.recurrence is map && d.recurrence.keys().hasOnly(['frequency', 'interval']) && d.recurrence.keys().hasAll(['frequency', 'interval']) && (d.recurrence.frequency is string && d.recurrence.frequency in ['daily', 'weekly', 'monthly']) && (d.recurrence.interval is int && d.recurrence.interval >= 1 && d.recurrence.interval <= 365)) || d.recurrence == null)
+        && ((d.completedOn is string && d.completedOn.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')) || d.completedOn == null)
+;
+    }
+
+    function valid_projects(d) {
+      return d.keys().hasOnly(['name', 'description', 'status', 'priority', 'startDate', 'deadline', 'clientId', 'goalId', 'memberIds', 'budgetMinor', 'progressMode', 'manualProgress', 'archived', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && d.keys().hasAll(['name', 'description', 'status', 'priority', 'startDate', 'deadline', 'clientId', 'goalId', 'memberIds', 'budgetMinor', 'progressMode', 'manualProgress', 'archived', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && (d.name is string && d.name.size() >= 1 && d.name.size() <= 120)
+        && (d.description is string && d.description.size() <= 5000)
+        && (d.status is string && d.status in ['planning', 'active', 'on_hold', 'completed', 'cancelled'])
+        && (d.priority is string && d.priority in ['low', 'medium', 'high', 'urgent'])
+        && ((d.startDate is string && d.startDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')) || d.startDate == null)
+        && ((d.deadline is string && d.deadline.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')) || d.deadline == null)
+        && ((d.clientId is string && d.clientId.matches('^[A-Za-z0-9_-]{1,128}$')) || d.clientId == null)
+        && ((d.goalId is string && d.goalId.matches('^[A-Za-z0-9_-]{1,128}$')) || d.goalId == null)
+        && (d.memberIds is list && d.memberIds.size() <= 50)
+        && ((d.budgetMinor is int && d.budgetMinor >= 0 && d.budgetMinor <= 100000000000000) || d.budgetMinor == null)
+        && (d.progressMode is string && d.progressMode in ['tasks', 'manual'])
+        && (d.manualProgress is int && d.manualProgress >= 0 && d.manualProgress <= 100)
+        && d.archived is bool
+;
+    }
+
+    function valid_goals(d) {
+      return d.keys().hasOnly(['title', 'description', 'category', 'status', 'startDate', 'targetDate', 'measureKind', 'measureTarget', 'measureCurrent', 'measureUnit', 'why', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && d.keys().hasAll(['title', 'description', 'category', 'status', 'startDate', 'targetDate', 'measureKind', 'measureTarget', 'measureCurrent', 'measureUnit', 'why', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && (d.title is string && d.title.size() >= 1 && d.title.size() <= 160)
+        && (d.description is string && d.description.size() <= 5000)
+        && (d.category is string && d.category in ['personal', 'career', 'financial', 'learning', 'health', 'business', 'spiritual', 'other'])
+        && (d.status is string && d.status in ['not_started', 'active', 'on_hold', 'achieved', 'abandoned'])
+        && ((d.startDate is string && d.startDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')) || d.startDate == null)
+        && ((d.targetDate is string && d.targetDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')) || d.targetDate == null)
+        && (d.measureKind is string && d.measureKind in ['milestones', 'numeric', 'tasks'])
+        && (d.measureTarget is number && d.measureTarget >= 0 && d.measureTarget <= 1000000000)
+        && (d.measureCurrent is number && d.measureCurrent >= 0 && d.measureCurrent <= 1000000000)
+        && (d.measureUnit is string && d.measureUnit.size() <= 30)
+        && (d.why is string && d.why.size() <= 2000)
+;
+    }
+
+    function valid_milestones(d) {
+      return d.keys().hasOnly(['goalId', 'title', 'dueDate', 'done', 'doneOn', 'order', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && d.keys().hasAll(['goalId', 'title', 'dueDate', 'done', 'doneOn', 'order', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && (d.goalId is string && d.goalId.matches('^[A-Za-z0-9_-]{1,128}$'))
+        && (d.title is string && d.title.size() >= 1 && d.title.size() <= 160)
+        && ((d.dueDate is string && d.dueDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')) || d.dueDate == null)
+        && d.done is bool
+        && ((d.doneOn is string && d.doneOn.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')) || d.doneOn == null)
+        && (d.order is int && d.order >= 0 && d.order <= 10000)
+;
+    }
+
+    function valid_notes(d) {
+      return d.keys().hasOnly(['title', 'body', 'category', 'tags', 'pinned', 'links', 'meeting', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && d.keys().hasAll(['title', 'body', 'category', 'tags', 'pinned', 'links', 'meeting', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && (d.title is string && d.title.size() >= 1 && d.title.size() <= 200)
+        && (d.body is string && d.body.size() <= 100000)
+        && (d.category is string && d.category in ['general', 'meeting', 'idea', 'research', 'study', 'personal', 'work'])
+        && (d.tags is list && d.tags.size() <= 20)
+        && d.pinned is bool
+        && (d.links is map && d.links.keys().hasOnly(['projectId', 'goalId', 'taskId', 'clientId', 'courseId']) && d.links.keys().hasAll(['projectId', 'goalId', 'taskId', 'clientId', 'courseId']) && ((d.links.projectId is string && d.links.projectId.matches('^[A-Za-z0-9_-]{1,128}$')) || d.links.projectId == null) && ((d.links.goalId is string && d.links.goalId.matches('^[A-Za-z0-9_-]{1,128}$')) || d.links.goalId == null) && ((d.links.taskId is string && d.links.taskId.matches('^[A-Za-z0-9_-]{1,128}$')) || d.links.taskId == null) && ((d.links.clientId is string && d.links.clientId.matches('^[A-Za-z0-9_-]{1,128}$')) || d.links.clientId == null) && ((d.links.courseId is string && d.links.courseId.matches('^[A-Za-z0-9_-]{1,128}$')) || d.links.courseId == null))
+        && ((d.meeting is map && d.meeting.keys().hasOnly(['date', 'attendees', 'agenda', 'actionItems']) && d.meeting.keys().hasAll(['date', 'attendees', 'agenda', 'actionItems']) && ((d.meeting.date is string && d.meeting.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')) || d.meeting.date == null) && (d.meeting.attendees is list && d.meeting.attendees.size() <= 50) && (d.meeting.agenda is string && d.meeting.agenda.size() <= 5000) && (d.meeting.actionItems is list && d.meeting.actionItems.size() <= 50)) || d.meeting == null)
+;
+    }
+
+    function valid_events(d) {
+      return d.keys().hasOnly(['title', 'description', 'kind', 'allDay', 'start', 'end', 'location', 'links', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && d.keys().hasAll(['title', 'description', 'kind', 'allDay', 'start', 'end', 'location', 'links', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && (d.title is string && d.title.size() >= 1 && d.title.size() <= 200)
+        && (d.description is string && d.description.size() <= 5000)
+        && (d.kind is string && d.kind in ['event', 'meeting', 'reminder', 'study', 'deadline'])
+        && d.allDay is bool
+        && (d.start is string && d.start.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}$'))
+        && (d.end is string && d.end.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}$'))
+        && (d.location is string && d.location.size() <= 200)
+        && (d.links is map && d.links.keys().hasOnly(['projectId', 'goalId', 'taskId', 'clientId', 'courseId']) && d.links.keys().hasAll(['projectId', 'goalId', 'taskId', 'clientId', 'courseId']) && ((d.links.projectId is string && d.links.projectId.matches('^[A-Za-z0-9_-]{1,128}$')) || d.links.projectId == null) && ((d.links.goalId is string && d.links.goalId.matches('^[A-Za-z0-9_-]{1,128}$')) || d.links.goalId == null) && ((d.links.taskId is string && d.links.taskId.matches('^[A-Za-z0-9_-]{1,128}$')) || d.links.taskId == null) && ((d.links.clientId is string && d.links.clientId.matches('^[A-Za-z0-9_-]{1,128}$')) || d.links.clientId == null) && ((d.links.courseId is string && d.links.courseId.matches('^[A-Za-z0-9_-]{1,128}$')) || d.links.courseId == null))
+;
+    }
+
+    function valid_courses(d) {
+      return d.keys().hasOnly(['title', 'provider', 'url', 'status', 'level', 'totalUnits', 'completedUnits', 'goalId', 'targetDate', 'notes', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && d.keys().hasAll(['title', 'provider', 'url', 'status', 'level', 'totalUnits', 'completedUnits', 'goalId', 'targetDate', 'notes', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && (d.title is string && d.title.size() >= 1 && d.title.size() <= 200)
+        && (d.provider is string && d.provider.size() <= 120)
+        && (d.url == '' || (d.url is string && d.url.size() <= 500 && d.url.matches('^https?:')))
+        && (d.status is string && d.status in ['planned', 'in_progress', 'paused', 'completed'])
+        && (d.level is string && d.level in ['beginner', 'intermediate', 'advanced'])
+        && (d.totalUnits is int && d.totalUnits >= 0 && d.totalUnits <= 10000)
+        && (d.completedUnits is int && d.completedUnits >= 0 && d.completedUnits <= 10000)
+        && ((d.goalId is string && d.goalId.matches('^[A-Za-z0-9_-]{1,128}$')) || d.goalId == null)
+        && ((d.targetDate is string && d.targetDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')) || d.targetDate == null)
+        && (d.notes is string && d.notes.size() <= 5000)
+;
+    }
+
+    function valid_studySessions(d) {
+      return d.keys().hasOnly(['date', 'minutes', 'courseId', 'documentId', 'topic', 'notes', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && d.keys().hasAll(['date', 'minutes', 'courseId', 'documentId', 'topic', 'notes', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && (d.date is string && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))
+        && (d.minutes is int && d.minutes >= 1 && d.minutes <= 1440)
+        && ((d.courseId is string && d.courseId.matches('^[A-Za-z0-9_-]{1,128}$')) || d.courseId == null)
+        && ((d.documentId is string && d.documentId.matches('^[A-Za-z0-9_-]{1,128}$')) || d.documentId == null)
+        && (d.topic is string && d.topic.size() <= 200)
+        && (d.notes is string && d.notes.size() <= 5000)
+;
+    }
+
+    function valid_documents(d) {
+      return d.keys().hasOnly(['title', 'fileName', 'contentType', 'sizeBytes', 'storagePath', 'textPath', 'pageCount', 'wordCount', 'status', 'courseId', 'position', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && d.keys().hasAll(['title', 'fileName', 'contentType', 'sizeBytes', 'storagePath', 'textPath', 'pageCount', 'wordCount', 'status', 'courseId', 'position', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && (d.title is string && d.title.size() >= 1 && d.title.size() <= 200)
+        && (d.fileName is string && d.fileName.size() >= 1 && d.fileName.size() <= 200)
+        && (d.contentType is string && d.contentType in ['application/pdf', 'text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'])
+        && (d.sizeBytes is int && d.sizeBytes >= 1 && d.sizeBytes <= 26214400)
+        && (d.storagePath is string && d.storagePath.size() >= 1 && d.storagePath.size() <= 400)
+        && ((d.textPath is string && d.textPath.size() <= 400) || d.textPath == null)
+        && (d.pageCount is int && d.pageCount >= 0 && d.pageCount <= 10000)
+        && (d.wordCount is int && d.wordCount >= 0 && d.wordCount <= 10000000)
+        && (d.status is string && d.status in ['uploaded', 'processed', 'failed'])
+        && ((d.courseId is string && d.courseId.matches('^[A-Za-z0-9_-]{1,128}$')) || d.courseId == null)
+        && (d.position is map && d.position.keys().hasOnly(['page', 'paragraph']) && d.position.keys().hasAll(['page', 'paragraph']) && (d.position.page is int && d.position.page >= 1 && d.position.page <= 10000) && (d.position.paragraph is int && d.position.paragraph >= 0 && d.position.paragraph <= 100000))
+;
+    }
+
+    function valid_habits(d) {
+      return d.keys().hasOnly(['name', 'frequency', 'target', 'unit', 'archived', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && d.keys().hasAll(['name', 'frequency', 'target', 'unit', 'archived', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && (d.name is string && d.name.size() >= 1 && d.name.size() <= 80)
+        && (d.frequency is string && d.frequency in ['daily', 'weekly'])
+        && (d.target is int && d.target >= 1 && d.target <= 1000)
+        && (d.unit is string && d.unit.size() <= 30)
+        && d.archived is bool
+;
+    }
+
+    function valid_habitLogs(d) {
+      return d.keys().hasOnly(['habitId', 'date', 'value', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && d.keys().hasAll(['habitId', 'date', 'value', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && (d.habitId is string && d.habitId.matches('^[A-Za-z0-9_-]{1,128}$'))
+        && (d.date is string && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))
+        && (d.value is int && d.value >= 0 && d.value <= 100000)
+;
+    }
+
+    function valid_clients(d) {
+      return d.keys().hasOnly(['name', 'company', 'email', 'phone', 'address', 'status', 'notes', 'tags', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && d.keys().hasAll(['name', 'company', 'email', 'phone', 'address', 'status', 'notes', 'tags', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && (d.name is string && d.name.size() >= 1 && d.name.size() <= 120)
+        && (d.company is string && d.company.size() <= 120)
+        && (d.email == '' || (d.email is string && d.email.size() <= 120))
+        && (d.phone is string && d.phone.size() <= 40)
+        && (d.address is string && d.address.size() <= 300)
+        && (d.status is string && d.status in ['lead', 'active', 'inactive'])
+        && (d.notes is string && d.notes.size() <= 5000)
+        && (d.tags is list && d.tags.size() <= 20)
+;
+    }
+
+    function valid_clientInteractions(d) {
+      return d.keys().hasOnly(['clientId', 'kind', 'date', 'summary', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && d.keys().hasAll(['clientId', 'kind', 'date', 'summary', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && (d.clientId is string && d.clientId.matches('^[A-Za-z0-9_-]{1,128}$'))
+        && (d.kind is string && d.kind in ['call', 'email', 'meeting', 'message', 'note'])
+        && (d.date is string && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))
+        && (d.summary is string && d.summary.size() >= 1 && d.summary.size() <= 2000)
+;
+    }
+
+    function valid_categories(d) {
+      return d.keys().hasOnly(['name', 'kind', 'defaultNature', 'archived', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && d.keys().hasAll(['name', 'kind', 'defaultNature', 'archived', 'createdBy', 'createdAt', 'updatedBy', 'updatedAt'])
+        && (d.name is string && d.name.size() >= 1 && d.name.size() <= 60)
+        && (d.kind is string && d.kind in ['income', 'expense'])
+        && ((d.defaultNature is string && d.defaultNature in ['need', 'want', 'investment', 'obligation', 'other']) || d.defaultNature == null)
+        && d.archived is bool
+;
+    }
+
+    function valid_userProfile(d) {
+      return d.keys().hasOnly(['displayName', 'defaultTenantId', 'theme', 'email', 'createdAt', 'updatedAt'])
+        && d.keys().hasAll(['displayName', 'defaultTenantId', 'theme', 'email', 'createdAt', 'updatedAt'])
+        && (d.displayName is string && d.displayName.size() <= 80)
+        && ((d.defaultTenantId is string && d.defaultTenantId.matches('^[A-Za-z0-9_-]{1,128}$')) || d.defaultTenantId == null)
+        && (d.theme is string && d.theme in ['system', 'light', 'dark'])
+;
+    }
+
+    // ── User-private data ────────────────────────────────────────────────
+    match /users/{userId} {
+      allow read: if signedIn() && request.auth.uid == userId;
+      allow create: if signedIn() && request.auth.uid == userId
+        && valid_userProfile(request.resource.data)
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time;
+      allow update: if signedIn() && request.auth.uid == userId
+        && valid_userProfile(request.resource.data)
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+
+      // Password vault: end-to-end encrypted in the browser. The server only
+      // ever stores ciphertext; the key is derived from a master password
+      // that never leaves the device.
+      match /vault/{itemId} {
+        allow read, delete: if signedIn() && request.auth.uid == userId;
+        allow create, update: if signedIn() && request.auth.uid == userId
+          && request.resource.data.keys().hasOnly(['ciphertext', 'iv', 'kind', 'version', 'updatedAt'])
+          && request.resource.data.ciphertext is string && request.resource.data.ciphertext.size() <= 200000
+          && request.resource.data.iv is string && request.resource.data.iv.size() <= 64
+          && request.resource.data.kind in ['login', 'card', 'note']
+          && request.resource.data.version == 1
+          && request.resource.data.updatedAt == request.time;
+      }
+      match /vaultMeta/{docId} {
+        allow read: if signedIn() && request.auth.uid == userId;
+        allow create: if signedIn() && request.auth.uid == userId && docId == 'key'
+          && request.resource.data.keys().hasOnly(['salt', 'iterations', 'verifier', 'verifierIv', 'version'])
+          && request.resource.data.salt is string && request.resource.data.salt.size() <= 64
+          && request.resource.data.iterations is int && request.resource.data.iterations >= 310000
+          && request.resource.data.verifier is string && request.resource.data.verifier.size() <= 512
+          && request.resource.data.verifierIv is string && request.resource.data.verifierIv.size() <= 64
+          && request.resource.data.version == 1;
+        // Changing the master password re-encrypts every item; the key record is replaced last.
+        allow update: if signedIn() && request.auth.uid == userId
+          && request.resource.data.keys().hasOnly(['salt', 'iterations', 'verifier', 'verifierIv', 'version'])
+          && request.resource.data.iterations is int && request.resource.data.iterations >= 310000;
+        allow delete: if false;
+      }
+    }
+
+    // A user may list their own memberships (collection-group query on uid).
+    match /{path=**}/members/{memberId} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // A user may see invitations addressed to their verified email.
+    match /{path=**}/invitations/{invitationId} {
+      allow read: if signedIn() && request.auth.token.email_verified == true
+        && resource.data.email == request.auth.token.email.lower();
+    }
+
+    // ── Tenants ──────────────────────────────────────────────────────────
+    match /tenants/{tenantId} {
+      allow read: if isActiveMember(tenantId);
+      allow write: if false; // createTenant / updateTenant functions
+
+      match /tasks/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member', 'viewer']);
+        allow create: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_tasks(request.resource.data) && createMeta();
+        allow update: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_tasks(request.resource.data) && updateMeta();
+        allow delete: if hasPerm(tenantId, ['owner', 'admin', 'manager'])
+          || (hasPerm(tenantId, ['owner', 'admin', 'manager', 'member']) && resource.data.createdBy == request.auth.uid);
+      }
+
+      match /projects/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member', 'viewer']);
+        allow create: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_projects(request.resource.data) && createMeta();
+        allow update: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_projects(request.resource.data) && updateMeta();
+        allow delete: if hasPerm(tenantId, ['owner', 'admin', 'manager'])
+          || (hasPerm(tenantId, ['owner', 'admin', 'manager', 'member']) && resource.data.createdBy == request.auth.uid);
+      }
+
+      match /goals/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member', 'viewer']);
+        allow create: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_goals(request.resource.data) && createMeta();
+        allow update: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_goals(request.resource.data) && updateMeta();
+        allow delete: if hasPerm(tenantId, ['owner', 'admin', 'manager'])
+          || (hasPerm(tenantId, ['owner', 'admin', 'manager', 'member']) && resource.data.createdBy == request.auth.uid);
+      }
+
+      match /milestones/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member', 'viewer']);
+        allow create: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_milestones(request.resource.data) && createMeta();
+        allow update: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_milestones(request.resource.data) && updateMeta();
+        allow delete: if hasPerm(tenantId, ['owner', 'admin', 'manager'])
+          || (hasPerm(tenantId, ['owner', 'admin', 'manager', 'member']) && resource.data.createdBy == request.auth.uid);
+      }
+
+      match /notes/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member', 'viewer']);
+        allow create: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_notes(request.resource.data) && createMeta();
+        allow update: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_notes(request.resource.data) && updateMeta();
+        allow delete: if hasPerm(tenantId, ['owner', 'admin', 'manager'])
+          || (hasPerm(tenantId, ['owner', 'admin', 'manager', 'member']) && resource.data.createdBy == request.auth.uid);
+      }
+
+      match /events/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member', 'viewer']);
+        allow create: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_events(request.resource.data) && createMeta();
+        allow update: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_events(request.resource.data) && updateMeta();
+        allow delete: if hasPerm(tenantId, ['owner', 'admin', 'manager'])
+          || (hasPerm(tenantId, ['owner', 'admin', 'manager', 'member']) && resource.data.createdBy == request.auth.uid);
+      }
+
+      match /courses/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member', 'viewer']);
+        allow create: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_courses(request.resource.data) && createMeta();
+        allow update: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_courses(request.resource.data) && updateMeta();
+        allow delete: if hasPerm(tenantId, ['owner', 'admin', 'manager'])
+          || (hasPerm(tenantId, ['owner', 'admin', 'manager', 'member']) && resource.data.createdBy == request.auth.uid);
+      }
+
+      match /studySessions/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member', 'viewer']);
+        allow create: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_studySessions(request.resource.data) && createMeta();
+        allow update: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_studySessions(request.resource.data) && updateMeta();
+        allow delete: if hasPerm(tenantId, ['owner', 'admin', 'manager'])
+          || (hasPerm(tenantId, ['owner', 'admin', 'manager', 'member']) && resource.data.createdBy == request.auth.uid);
+      }
+
+      match /documents/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member', 'viewer']);
+        allow create: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_documents(request.resource.data) && createMeta()
+          && request.resource.data.storagePath.matches('tenants/' + tenantId + '/documents/' + docId + '/source[.](pdf|txt|docx)') && (request.resource.data.textPath == null || request.resource.data.textPath == 'tenants/' + tenantId + '/documents/' + docId + '/text.json');
+        allow update: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_documents(request.resource.data) && updateMeta()
+          && request.resource.data.storagePath.matches('tenants/' + tenantId + '/documents/' + docId + '/source[.](pdf|txt|docx)') && (request.resource.data.textPath == null || request.resource.data.textPath == 'tenants/' + tenantId + '/documents/' + docId + '/text.json');
+        allow delete: if hasPerm(tenantId, ['owner', 'admin', 'manager'])
+          || (hasPerm(tenantId, ['owner', 'admin', 'manager', 'member']) && resource.data.createdBy == request.auth.uid);
+      }
+
+      match /habits/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member', 'viewer']);
+        allow create: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_habits(request.resource.data) && createMeta();
+        allow update: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_habits(request.resource.data) && updateMeta();
+        allow delete: if hasPerm(tenantId, ['owner', 'admin', 'manager'])
+          || (hasPerm(tenantId, ['owner', 'admin', 'manager', 'member']) && resource.data.createdBy == request.auth.uid);
+      }
+
+      match /habitLogs/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member', 'viewer']);
+        allow create: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_habitLogs(request.resource.data) && createMeta();
+        allow update: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member'])
+          && valid_habitLogs(request.resource.data) && updateMeta();
+        allow delete: if hasPerm(tenantId, ['owner', 'admin', 'manager'])
+          || (hasPerm(tenantId, ['owner', 'admin', 'manager', 'member']) && resource.data.createdBy == request.auth.uid);
+      }
+
+      match /clients/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member']);
+        allow create: if hasPerm(tenantId, ['owner', 'admin', 'manager'])
+          && valid_clients(request.resource.data) && createMeta();
+        allow update: if hasPerm(tenantId, ['owner', 'admin', 'manager'])
+          && valid_clients(request.resource.data) && updateMeta();
+        allow delete: if hasPerm(tenantId, ['owner', 'admin', 'manager'])
+          || (hasPerm(tenantId, ['owner', 'admin', 'manager']) && resource.data.createdBy == request.auth.uid);
+      }
+
+      match /clientInteractions/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member']);
+        allow create: if hasPerm(tenantId, ['owner', 'admin', 'manager'])
+          && valid_clientInteractions(request.resource.data) && createMeta();
+        allow update: if hasPerm(tenantId, ['owner', 'admin', 'manager'])
+          && valid_clientInteractions(request.resource.data) && updateMeta();
+        allow delete: if hasPerm(tenantId, ['owner', 'admin', 'manager'])
+          || (hasPerm(tenantId, ['owner', 'admin', 'manager']) && resource.data.createdBy == request.auth.uid);
+      }
+
+      match /categories/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager']);
+        allow create: if hasPerm(tenantId, ['owner', 'admin', 'manager'])
+          && valid_categories(request.resource.data) && createMeta();
+        allow update: if hasPerm(tenantId, ['owner', 'admin', 'manager'])
+          && valid_categories(request.resource.data) && updateMeta();
+        allow delete: if hasPerm(tenantId, ['owner', 'admin'])
+          || (hasPerm(tenantId, ['owner', 'admin', 'manager']) && resource.data.createdBy == request.auth.uid);
+      }
+
+      match /members/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager', 'member', 'viewer']);
+        allow write: if false; // written only by Cloud Functions (Admin SDK)
+      }
+
+      match /invitations/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin']);
+        allow write: if false; // written only by Cloud Functions (Admin SDK)
+      }
+
+      match /auditLogs/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin']);
+        allow write: if false; // written only by Cloud Functions (Admin SDK)
+      }
+
+      match /accounts/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager']);
+        allow write: if false; // written only by Cloud Functions (Admin SDK)
+      }
+
+      match /transactions/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager']);
+        allow write: if false; // written only by Cloud Functions (Admin SDK)
+      }
+
+      match /debts/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager']);
+        allow write: if false; // written only by Cloud Functions (Admin SDK)
+      }
+
+      match /budgets/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager']);
+        allow write: if false; // written only by Cloud Functions (Admin SDK)
+      }
+
+      match /savingsGoals/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager']);
+        allow write: if false; // written only by Cloud Functions (Admin SDK)
+      }
+
+      match /savingsContributions/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager']);
+        allow write: if false; // written only by Cloud Functions (Admin SDK)
+      }
+
+      match /invoices/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager']);
+        allow write: if false; // written only by Cloud Functions (Admin SDK)
+      }
+
+      match /paymentNotices/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager']);
+        allow write: if false; // written only by Cloud Functions (Admin SDK)
+      }
+
+      match /invoices/{invoiceId}/events/{eventId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager']);
+        allow write: if false;
+      }
+
+      // Idempotency records, counters and anything not listed: no client access.
+      match /{document=**} {
+        allow read, write: if false;
+      }
+    }
+
+    // ── Legacy (pre-rebuild) collections ─────────────────────────────────
+    // Legacy data is migrated server-side. The only client access kept is for
+    // the owner to read and then delete their legacy plaintext vault entries
+    // while moving them into the encrypted vault.
+    match /passwords/{id} {
+      allow read, delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+    match /secureNotes/{id} {
+      allow read, delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+    match /paymentCards/{id} {
+      allow read, delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // Default deny.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

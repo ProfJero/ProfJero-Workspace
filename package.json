@@ -2,14 +2,18 @@
   "name": "profjero-workspace",
   "private": true,
   "type": "module",
-  "workspaces": ["packages/*", "apps/*"],
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
     "build": "npm run rules && npm run build -w @profjero/shared && npm run build -w @profjero/functions && npm run build -w @profjero/web",
     "rules": "tsx scripts/build-rules.ts",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test -w @profjero/shared && npm run test -w @profjero/web",
-    "test:emulator": "npm run rules && npm run build -w @profjero/functions && firebase emulators:exec --only firestore,auth,functions,storage --project demo-profjero \"npm run test:emulator -w @profjero/functions\"",
-    "dev": "npm run dev -w @profjero/web"
+    "test:emulator": "npm run rules && npm run build -w @profjero/functions && node scripts/run-emulator-tests.mjs",
+    "dev": "npm run dev -w @profjero/web",
+    "rules:check": "tsx scripts/build-rules.ts --check"
   },
   "devDependencies": {
     "firebase-tools": "^15.32.1",

@@ -1,0 +1,139 @@
+rules_version = '2';
+
+// Tenant isolation model
+// ──────────────────────
+// Every tenant-owned document lives under tenants/{tenantId}/…; access is
+// granted only to users with an ACTIVE membership document at
+// tenants/{tenantId}/members/{uid}. Membership documents are written only by
+// Cloud Functions, so a client can never grant itself access or a role.
+// Nothing here trusts tenantId/userId/role values sent in a request body.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function memberPath(tenantId) {
+      return /databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid);
+    }
+
+    function isActiveMember(tenantId) {
+      return signedIn() && exists(memberPath(tenantId)) && get(memberPath(tenantId)).data.status == 'active';
+    }
+
+    function hasPerm(tenantId, roles) {
+      return isActiveMember(tenantId) && get(memberPath(tenantId)).data.role in roles;
+    }
+
+    // Server-managed metadata on every client-written document.
+    function createMeta() {
+      let d = request.resource.data;
+      return d.createdBy == request.auth.uid && d.updatedBy == request.auth.uid
+        && d.createdAt == request.time && d.updatedAt == request.time;
+    }
+
+    function updateMeta() {
+      let d = request.resource.data;
+      return d.createdBy == resource.data.createdBy && d.createdAt == resource.data.createdAt
+        && d.updatedBy == request.auth.uid && d.updatedAt == request.time;
+    }
+
+@@VALIDATORS@@
+
+    // ── User-private data ────────────────────────────────────────────────
+    match /users/{userId} {
+      allow read: if signedIn() && request.auth.uid == userId;
+      allow create: if signedIn() && request.auth.uid == userId
+        && valid_userProfile(request.resource.data)
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time;
+      allow update: if signedIn() && request.auth.uid == userId
+        && valid_userProfile(request.resource.data)
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+
+      // Password vault: end-to-end encrypted in the browser. The server only
+      // ever stores ciphertext; the key is derived from a master password
+      // that never leaves the device.
+      match /vault/{itemId} {
+        allow read, delete: if signedIn() && request.auth.uid == userId;
+        allow create, update: if signedIn() && request.auth.uid == userId
+          && request.resource.data.keys().hasOnly(['ciphertext', 'iv', 'kind', 'version', 'updatedAt'])
+          && request.resource.data.ciphertext is string && request.resource.data.ciphertext.size() <= 200000
+          && request.resource.data.iv is string && request.resource.data.iv.size() <= 64
+          && request.resource.data.kind in ['login', 'card', 'note']
+          && request.resource.data.version == 1
+          && request.resource.data.updatedAt == request.time;
+      }
+      match /vaultMeta/{docId} {
+        allow read: if signedIn() && request.auth.uid == userId;
+        allow create: if signedIn() && request.auth.uid == userId && docId == 'key'
+          && request.resource.data.keys().hasOnly(['salt', 'iterations', 'verifier', 'verifierIv', 'version'])
+          && request.resource.data.salt is string && request.resource.data.salt.size() <= 64
+          && request.resource.data.iterations is int && request.resource.data.iterations >= 310000
+          && request.resource.data.verifier is string && request.resource.data.verifier.size() <= 512
+          && request.resource.data.verifierIv is string && request.resource.data.verifierIv.size() <= 64
+          && request.resource.data.version == 1;
+        // Changing the master password re-encrypts every item; the key record is replaced last.
+        allow update: if signedIn() && request.auth.uid == userId
+          && request.resource.data.keys().hasOnly(['salt', 'iterations', 'verifier', 'verifierIv', 'version'])
+          && request.resource.data.iterations is int && request.resource.data.iterations >= 310000;
+        allow delete: if false;
+      }
+    }
+
+    // A user may list their own memberships (collection-group query on uid).
+    match /{path=**}/members/{memberId} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // A user may see invitations addressed to their verified email.
+    match /{path=**}/invitations/{invitationId} {
+      allow read: if signedIn() && request.auth.token.email_verified == true
+        && resource.data.email == request.auth.token.email.lower();
+    }
+
+    // ── Tenants ──────────────────────────────────────────────────────────
+    match /tenants/{tenantId} {
+      allow read: if isActiveMember(tenantId);
+      allow write: if false; // createTenant / updateTenant functions
+
+@@CLIENT_COLLECTIONS@@
+
+@@FUNCTION_COLLECTIONS@@
+
+      match /invoices/{invoiceId}/events/{eventId} {
+        allow read: if hasPerm(tenantId, {{roles:finance.read}});
+        allow write: if false;
+      }
+
+      // Idempotency records, counters and anything not listed: no client access.
+      match /{document=**} {
+        allow read, write: if false;
+      }
+    }
+
+    // ── Legacy (pre-rebuild) collections ─────────────────────────────────
+    // Legacy data is migrated server-side. The only client access kept is for
+    // the owner to read and then delete their legacy plaintext vault entries
+    // while moving them into the encrypted vault.
+    match /passwords/{id} {
+      allow read, delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+    match /secureNotes/{id} {
+      allow read, delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+    match /paymentCards/{id} {
+      allow read, delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // Default deny.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
