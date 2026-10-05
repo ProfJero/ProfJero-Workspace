@@ -10,3 +10,4 @@ setGlobalOptions({ region: REGION, maxInstances: 20 });
 export * from './tenants';
 export * from './finance';
 export * from './invoices';
+export * from './migration';

@@ -92,3 +92,33 @@ Severity: **C** Critical · **H** High · **M** Medium · **L** Low.
 5. Client portal is rebuilt around a server-issued, hashed, revocable token and a function that returns only that client's invoices.
 6. Password manager: plaintext storage is discontinued. The new vault encrypts client-side (AES-GCM, key derived from a master password that never leaves the device). Legacy plaintext entries are migrated by the owner and then deleted.
 7. Fake “AI” output is removed. Insights are deterministic rules that state *why* they are shown.
+
+## 5. Resolution status
+
+| Finding | Status |
+|---|---|
+| S1–S3, S5, S7 (open database, portal leaks, client-side authorization) | Fixed: tenant-scoped data, generated rules, function-only privileged writes, hashed portal tokens. **Takes effect when the new rules are deployed** (docs/DEPLOYMENT.md). |
+| S4 plaintext passwords | Fixed: client-side encrypted vault + guided migration that deletes plaintext copies. |
+| S6 XSS | Fixed: no HTML rendering of user content; CSP. |
+| S8 fake API key | Removed. |
+| S9, S10 | Fixed (config in env, password reset, no pre-filled email). App Check is supported but must be configured (docs/SECURITY.md). |
+| F1–F10 | Fixed: integer money, validated input, transactional + idempotent writes, accounts & transfers, single engine, inclusive date ranges in workspace timezone, transparent score, deterministic insights, voiding instead of deletion. |
+| D1–D6 | Fixed: undated tasks shown, single progress source, one status vocabulary per entity, ids instead of names. |
+| A1–A7 | Fixed: modular TypeScript app, built CSS, lazy-loaded modules, live query cache, no debug logging, Study Companion text cleaning. |
+
+## 6. Known limitations (not done in this rebuild)
+
+* **Identity (CV builder) and Health Coach** were not rebuilt; their data is preserved in
+  `legacyArchive`. Habits covers simple routine tracking.
+* **Subscriptions / recurring bills** are not a separate feature; recurring expenses are
+  detected from the ledger as insights.
+* **No push/e-mail notifications** (task reminders, invitation e-mails). Invitations appear
+  in-app for the invited, verified e-mail address.
+* **Scanned PDFs** (images without text) cannot be read aloud — OCR is not included.
+* **Currency conversion** between accounts in different currencies is not supported.
+* **Large workspaces**: tasks, projects, goals and notes load whole per workspace (fine into
+  the low thousands). Server-side pagination would be the next step for very large teams.
+* **AI features** are deliberately not implemented; the deterministic insight/signal layer
+  is the foundation (docs/ARCHITECTURE.md → Intelligence).
+* The PWA service worker was not carried over; offline support comes from Firestore's
+  persistent cache once the app has loaded.

@@ -66,6 +66,8 @@ export const FUNCTION_COLLECTIONS = {
   savingsContributions: 'finance.read',
   invoices: 'finance.read',
   paymentNotices: 'finance.read',
+  /** Raw copies of legacy records that have no module yet (read-only). */
+  legacyArchive: 'tenant.update',
 } as const satisfies Record<string, Permission>;
 
 /** Metadata the data layer adds to every client-written document. */

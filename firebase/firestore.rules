@@ -502,6 +502,11 @@ service cloud.firestore {
         allow write: if false; // written only by Cloud Functions (Admin SDK)
       }
 
+      match /legacyArchive/{docId} {
+        allow read: if hasPerm(tenantId, ['owner', 'admin']);
+        allow write: if false; // written only by Cloud Functions (Admin SDK)
+      }
+
       match /invoices/{invoiceId}/events/{eventId} {
         allow read: if hasPerm(tenantId, ['owner', 'admin', 'manager']);
         allow write: if false;
