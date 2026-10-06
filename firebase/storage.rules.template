@@ -1,0 +1,37 @@
+rules_version = '2';
+
+// Files are private to the tenant that owns them. There are no public URLs:
+// the app reads files through the SDK with the user's credentials.
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function memberDoc(tenantId) {
+      return firestore.get(/databases/(default)/documents/tenants/$(tenantId)/members/$(request.auth.uid));
+    }
+
+    function hasPerm(tenantId, roles) {
+      return request.auth != null
+        && firestore.exists(/databases/(default)/documents/tenants/$(tenantId)/members/$(request.auth.uid))
+        && memberDoc(tenantId).data.status == 'active'
+        && memberDoc(tenantId).data.role in roles;
+    }
+
+    // tenants/{tenantId}/documents/{docId}/source.(pdf|txt|docx)  — the uploaded file
+    // tenants/{tenantId}/documents/{docId}/text.json             — processed text
+    match /tenants/{tenantId}/documents/{docId}/{fileName} {
+      allow read: if hasPerm(tenantId, {{roles:workspace.read}});
+      allow create, update: if hasPerm(tenantId, {{roles:workspace.write}})
+        && fileName.matches('^(source[.](pdf|txt|docx)|text[.]json)$')
+        && request.resource.size > 0
+        && request.resource.size <= @@MAX_BYTES@@
+        && request.resource.contentType in [@@CONTENT_TYPES@@]
+        && (fileName != 'text.json' || request.resource.contentType == 'application/json')
+        && (fileName == 'text.json' || request.resource.contentType != 'application/json');
+      allow delete: if hasPerm(tenantId, {{roles:workspace.write}});
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

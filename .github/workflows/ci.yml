@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - name: Security rules are generated from the current schemas
+        run: npm run rules:check
+      - run: npm run typecheck
+      - name: Unit tests (finance engine, permissions, domain, web)
+        run: npm test
+      - name: Build
+        run: npm run build
+        env:
+          VITE_FIREBASE_API_KEY: ci-placeholder
+          VITE_FIREBASE_AUTH_DOMAIN: demo-profjero.firebaseapp.com
+          VITE_FIREBASE_PROJECT_ID: demo-profjero
+          VITE_FIREBASE_STORAGE_BUCKET: demo-profjero.appspot.com
+          VITE_FIREBASE_APP_ID: ci-placeholder
+      - name: Emulator tests (tenant isolation, RBAC, ledger integrity, migration)
+        run: npm run test:emulator
