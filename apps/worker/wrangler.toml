@@ -5,6 +5,8 @@ compatibility_date = "2026-10-20"
 [vars]
 APP_ENV = "development"
 WEB_ORIGIN = "http://localhost:5173"
+FIREBASE_PROJECT_ID = "profjero"
 
-# Configure secrets using Wrangler secrets; never commit credentials.
-# Add a D1 binding only after creating the database and applying reviewed migrations.
+# Set production WEB_ORIGIN and APP_ENV in the Cloudflare dashboard.
+# Store FIREBASE_SERVICE_ACCOUNT_JSON with: npx wrangler secret put FIREBASE_SERVICE_ACCOUNT_JSON
+# Never commit service account credentials or place them in [vars].
