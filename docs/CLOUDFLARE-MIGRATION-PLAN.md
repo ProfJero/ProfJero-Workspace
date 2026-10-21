@@ -2,7 +2,7 @@
 
 ## Status and safety
 
-The current app uses React + TypeScript, Firebase Auth, Firestore, Storage, and callable Cloud Functions. Existing finance and tenancy operations depend on server-side authorization, transactions, idempotency, and audit logs. This branch adds a fail-closed Cloudflare Worker foundation only; it is not yet a production cut-over and does not remove Firebase Functions from deployment.
+The current app uses React + TypeScript, Firebase Auth, Firestore, Storage, and callable Cloud Functions. Existing finance and tenancy operations depend on server-side authorization, transactions, idempotency, and audit logs. This branch now adds Firebase ID-token verification and a Firestore REST foundation plus identity/membership routes. It is still not a production cut-over: unported routes return 501, and Firebase Functions remain configured until route parity is achieved.
 
 ## Target architecture
 
