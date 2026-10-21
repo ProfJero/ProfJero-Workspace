@@ -100,7 +100,7 @@ export async function queryCollection(env: Env, collectionPath: string, field: s
   const result = await request<({ document?: Document }[])>(
     env,
     `${documentPath(env, '').replace(/\\/$/, '')}:runQuery`,
-    { method: 'POST', body: JSON.stringify({ parent: documentPath(env, parentPath), structuredQuery, ...(transaction ? { transaction } : {}) }) },
+    { method: 'POST', body: JSON.stringify({ parent: documentPath(env, parentPath).replace(/\\/$/, ''), structuredQuery, ...(transaction ? { transaction } : {}) }) },
   );
   return result.flatMap(item => item.document ? [item.document] : []);
 }
