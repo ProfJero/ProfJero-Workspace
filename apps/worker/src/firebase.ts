@@ -1,37 +1,63 @@
 import type { Env } from './types';
 
-type Json = Record<string, unknown>;
 type JwtHeader = { alg?: string; kid?: string };
+export type FirebaseIdentity = { uid: string; email: string | null; emailVerified: boolean };
 type JwtPayload = { iss?: string; aud?: string; sub?: string; exp?: number; iat?: number; auth_time?: number; email?: string; email_verified?: boolean };
-
 const encoder = new TextEncoder();
-const decodeBase64Url = (value: string) => {
-  const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
-  const raw = atob(normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '='));
-  return Uint8Array.from(raw, (c) => c.charCodeAt(0));
-};
-const encodeBase64Url = (value: Uint8Array | string) => {
-  const bytes = typeof value === 'string' ? encoder.encode(value) : value;
-  let binary = '';
-  for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-};
-const parseJwt = (part: string) => JSON.parse(new TextDecoder().decode(decodeBase64Url(part))) as Json;
+const decoder = new TextDecoder();
 const cache = new Map<string, { expiresAt: number; value: unknown }>();
 
+function b64urlBytes(value: string): Uint8Array {
+  const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '='));
+  return Uint8Array.from(raw, c => c.charCodeAt(0));
+}
+function b64url(value: Uint8Array | string): string {
+  const bytes = typeof value === 'string' ? encoder.encode(value) : value;
+  let raw = '';
+  for (const byte of bytes) raw += String.fromCharCode(byte);
+  return btoa(raw).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
+function parseJwt<T>(value: string): T { return JSON.parse(decoder.decode(b64urlBytes(value))) as T; }
 async function cached<T>(key: string, load: () => Promise<T>, ttlMs: number): Promise<T> {
-  const item = cache.get(key);
-  if (item && item.expiresAt > Date.now()) return item.value as T;
+  const current = cache.get(key);
+  if (current && current.expiresAt > Date.now()) return current.value as T;
   const value = await load();
   cache.set(key, { value, expiresAt: Date.now() + ttlMs });
   return value;
 }
 
-export async function verifyFirebaseIdToken(token: string, projectId: string): Promise<JwtPayload> {
+function readDer(data: Uint8Array, offset: number): { tag: number; start: number; end: number; next: number } {
+  const tag = data[offset]!;
+  let length = data[offset + 1]!;
+  let cursor = offset + 2;
+  if ((length & 0x80) !== 0) {
+    const count = length & 0x7f;
+    if (count === 0 || count > 4) throw new Error('invalid_certificate');
+    length = 0;
+    for (let i = 0; i < count; i++) length = (length << 8) | data[cursor++]!;
+  }
+  return { tag, start: cursor, end: cursor + length, next: cursor + length };
+}
+function certificateSpki(pem: string): Uint8Array {
+  const base64 = pem.replace(/-----BEGIN CERTIFICATE-----|-----END CERTIFICATE-----|\s/g, '');
+  const der = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+  const outer = readDer(der, 0);
+  const tbs = readDer(der, outer.start);
+  let cursor = tbs.start;
+  if (der[cursor] === 0xa0) cursor = readDer(der, cursor).next;
+  // serial, signature algorithm, issuer, validity, subject
+  for (let i = 0; i < 5; i++) cursor = readDer(der, cursor).next;
+  const spki = readDer(der, cursor);
+  if (spki.tag !== 0x30) throw new Error('invalid_certificate');
+  return der.slice(cursor, spki.next);
+}
+
+export async function verifyFirebaseIdToken(token: string, projectId: string): Promise<FirebaseIdentity> {
   const parts = token.split('.');
   if (parts.length !== 3) throw new Error('invalid_token');
-  const header = parseJwt(parts[0]!) as JwtHeader;
-  const payload = parseJwt(parts[1]!) as JwtPayload;
+  const header = parseJwt<JwtHeader>(parts[0]!);
+  const payload = parseJwt<JwtPayload>(parts[1]!);
   if (!header.kid || header.alg !== 'RS256') throw new Error('invalid_token');
   if (payload.aud !== projectId || payload.iss !== `https://securetoken.google.com/${projectId}` || !payload.sub || payload.sub.length > 128) throw new Error('invalid_token');
   const now = Math.floor(Date.now() / 1000);
@@ -41,45 +67,33 @@ export async function verifyFirebaseIdToken(token: string, projectId: string): P
     if (!response.ok) throw new Error('token_verification_unavailable');
     return await response.json() as Record<string, string>;
   }, 45 * 60 * 1000);
-  const certificate = keys[header.kid];
-  if (!certificate) throw new Error('invalid_token');
-  const pem = certificate.replace(/-----BEGIN CERTIFICATE-----|-----END CERTIFICATE-----|\s/g, '');
-  const der = decodeBase64Url(btoa(String.fromCharCode(...Uint8Array.from(atob(pem), c => c.charCodeAt(0)))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_'));
-  const cert = await crypto.subtle.importKey('spki', der, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']).catch(async () => {
-    // Certificates are X.509; extract SubjectPublicKeyInfo from DER instead of trusting JWT claims.
-    return await importCertificatePublicKey(decodeBase64Url(encodeBase64Url(der)));
-  });
-  const signed = encoder.encode(`${parts[0]}.${parts[1]}`);
-  if (!await crypto.subtle.verify('RSASSA-PKCS1-v1_5', cert, decodeBase64Url(parts[2]!), signed)) throw new Error('invalid_token');
-  return payload;
+  const pem = keys[header.kid];
+  if (!pem) throw new Error('invalid_token');
+  const key = await crypto.subtle.importKey('spki', certificateSpki(pem), { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
+  const valid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, b64urlBytes(parts[2]!), encoder.encode(`${parts[0]}.${parts[1]}`));
+  if (!valid) throw new Error('invalid_token');
+  return { uid: payload.sub!, email: typeof payload.email === 'string' ? payload.email.toLowerCase() : null, emailVerified: payload.email_verified === true };
 }
 
-async function importCertificatePublicKey(_der: Uint8Array): Promise<CryptoKey> {
-  // The X.509 certificate must be parsed to SPKI. Fail closed until a proper parser is available.
-  throw new Error('certificate_parser_unavailable');
-}
-
-export async function getGoogleAccessToken(serviceAccountJson: string): Promise<{ token: string; expiresAt: number }> {
+export async function getGoogleAccessToken(serviceAccountJson: string): Promise<string> {
   return cached('google-access-token', async () => {
     const account = JSON.parse(serviceAccountJson) as { client_email: string; private_key: string; token_uri?: string };
     const now = Math.floor(Date.now() / 1000);
-    const header = encodeBase64Url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
-    const claim = encodeBase64Url(JSON.stringify({ iss: account.client_email, scope: 'https://www.googleapis.com/auth/datastore', aud: account.token_uri ?? 'https://oauth2.googleapis.com/token', iat: now, exp: now + 3600 }));
-    const unsigned = `${header}.${claim}`;
+    const audience = account.token_uri ?? 'https://oauth2.googleapis.com/token';
+    const unsigned = `${b64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }))}.${b64url(JSON.stringify({ iss: account.client_email, scope: 'https://www.googleapis.com/auth/datastore', aud: audience, iat: now, exp: now + 3600 }))}`;
     const pkcs8 = account.private_key.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g, '');
-    const key = await crypto.subtle.importKey('pkcs8', decodeBase64Url(encodeBase64Url(Uint8Array.from(atob(pkcs8), c => c.charCodeAt(0)))), { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']);
+    const key = await crypto.subtle.importKey('pkcs8', Uint8Array.from(atob(pkcs8), c => c.charCodeAt(0)), { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']);
     const signature = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', key, encoder.encode(unsigned));
-    const assertion = `${unsigned}.${encodeBase64Url(new Uint8Array(signature))}`;
-    const response = await fetch(account.token_uri ?? 'https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion }) });
+    const response = await fetch(audience, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: `${unsigned}.${b64url(new Uint8Array(signature))}` }) });
     if (!response.ok) throw new Error('google_auth_unavailable');
     const result = await response.json() as { access_token: string; expires_in: number };
-    return { token: result.access_token, expiresAt: Date.now() + Math.max(60, result.expires_in - 120) * 1000 };
+    return result.access_token;
   }, 50 * 60 * 1000);
 }
 
 export async function firestoreRequest<T>(env: Env, path: string, init: RequestInit = {}): Promise<T> {
   if (!env.FIREBASE_SERVICE_ACCOUNT_JSON) throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON secret is not configured');
-  const { token } = await getGoogleAccessToken(env.FIREBASE_SERVICE_ACCOUNT_JSON);
+  const token = await getGoogleAccessToken(env.FIREBASE_SERVICE_ACCOUNT_JSON);
   const url = `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(env.FIREBASE_PROJECT_ID)}/databases/(default)/documents${path}`;
   const response = await fetch(url, { ...init, headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json', ...(init.headers ?? {}) } });
   const text = await response.text();
