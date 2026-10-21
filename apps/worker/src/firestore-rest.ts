@@ -77,21 +77,21 @@ export async function getDocument(env: Env, path: string, transaction?: string):
 }
 
 export async function beginTransaction(env: Env): Promise<string> {
-  const result = await request<{ transaction: string }>(env, `${documentPath(env, '')}:beginTransaction`, {
+  const result = await request<{ transaction: string }>(env, `${documentPath(env, '').replace(/\\/$/, '')}:beginTransaction`, {
     method: 'POST', body: JSON.stringify({ options: { readWrite: {} } }),
   });
   return result.transaction;
 }
 
 export async function commitWrites(env: Env, writes: Write[], transaction?: string): Promise<void> {
-  await request(env, `${documentPath(env, '')}:commit`, {
+  await request(env, `${documentPath(env, '').replace(/\\/$/, '')}:commit`, {
     method: 'POST',
     body: JSON.stringify({ writes, ...(transaction ? { transaction } : {}) }),
   });
 }
 
 export async function queryCollection(env: Env, collectionPath: string, field: string, value: unknown, transaction?: string): Promise<Document[]> {
-  const parent = collectionPath.split('/').slice(0, -1).join('/');
+  const parentPath = collectionPath.split('/').slice(0, -1).join('/');
   const collectionId = collectionPath.split('/').at(-1)!;
   const structuredQuery = {
     from: [{ collectionId }],
@@ -99,8 +99,8 @@ export async function queryCollection(env: Env, collectionPath: string, field: s
   };
   const result = await request<({ document?: Document }[])>(
     env,
-    `${documentPath(env, parent)}:runQuery`,
-    { method: 'POST', body: JSON.stringify({ structuredQuery, ...(transaction ? { transaction } : {}) }) },
+    `${documentPath(env, '').replace(/\\/$/, '')}:runQuery`,
+    { method: 'POST', body: JSON.stringify({ parent: documentPath(env, parentPath), structuredQuery, ...(transaction ? { transaction } : {}) }) },
   );
   return result.flatMap(item => item.document ? [item.document] : []);
 }
