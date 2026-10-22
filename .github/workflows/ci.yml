@@ -35,3 +35,5 @@ jobs:
           VITE_FIREBASE_APP_ID: ci-placeholder
       - name: Emulator tests (tenant isolation, RBAC, ledger integrity, migration)
         run: npm run test:emulator
+      - name: Same suites against the Cloudflare Worker (wrangler dev + emulators)
+        run: npm run test:worker

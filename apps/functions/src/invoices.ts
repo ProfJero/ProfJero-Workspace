@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { FieldValue, Timestamp, type DocumentReference, type Transaction } from 'firebase-admin/firestore';
 import {
   computeInvoiceTotals,
   createPortalLinkInput,
@@ -21,7 +21,7 @@ import { audit, createdMeta, db, fail, getOrFail, idempotent, publicCallable, re
 import { applyDeltas, ledgerDelta, ledgerDocument, loadAccounts, transactionsCol } from './lib/ledger';
 
 const invoicesCol = (tenantId: string) => tenantRef(tenantId).collection('invoices');
-const event = (ref: FirebaseFirestore.DocumentReference, t: FirebaseFirestore.Transaction, kind: string, by: string | null, extra: Record<string, unknown> = {}) =>
+const event = (ref: DocumentReference, t: Transaction, kind: string, by: string | null, extra: Record<string, unknown> = {}) =>
   t.create(ref.collection('events').doc(), { kind, by, at: FieldValue.serverTimestamp(), ...extra });
 
 /** Totals are always computed on the server from the lines; client-sent totals are never trusted. */
@@ -120,7 +120,7 @@ export const voidInvoice = tenantCallable('finance.manage', invoiceActionInput, 
 
 /** Shared by direct payment recording and payment-notice approval. Caller has done all reads it needs except the ones here. */
 async function recordPayment(
-  t: FirebaseFirestore.Transaction,
+  t: Transaction,
   ctx: MemberContext,
   p: { invoiceId: string; amountMinor: number; date: string; accountId: string; method: string; reference: string; paymentNoticeId: string | null },
 ): Promise<{ transactionId: string; status: InvoiceStatus }> {

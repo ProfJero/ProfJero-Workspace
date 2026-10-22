@@ -219,4 +219,10 @@ describe('error mapping', () => {
     expect(toUserError({ code: 'auth/invalid-credential' }).message).toBe('Incorrect email or password.');
     expect(toUserError({ code: 'functions/failed-precondition', details: { reason: 'insufficient_balance' } }).reason).toBe('insufficient_balance');
   });
+  it('reports a missing Firestore index as a setup problem, not an edit conflict', () => {
+    const missingIndex = { code: 'failed-precondition', message: 'The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/x/firestore/indexes?create_composite=abc' };
+    expect(toUserError(missingIndex).reason).toBe('setup_incomplete');
+    expect(toUserError({ code: 'failed-precondition', message: 'The query requires an index. That index is currently building and cannot be used yet.' }).reason).toBe('setup_incomplete');
+    expect(toUserError({ code: 'failed-precondition', message: 'Version mismatch' }).reason).toBe('conflict');
+  });
 });

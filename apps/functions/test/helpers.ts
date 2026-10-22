@@ -12,6 +12,21 @@ export const admin = { db: getAdminFirestore(), auth: getAdminAuth() };
 
 const apps: FirebaseApp[] = [];
 
+/** When set, operations are sent to the Cloudflare Worker (wrangler dev) instead of the Functions emulator. */
+export const WORKER_URL = process.env.WORKER_URL;
+
+/** Calls the Worker exactly like the web app does; failures carry details.reason like a callable error. */
+export async function callWorker<T>(name: string, data: unknown, idToken: string | null): Promise<T> {
+  const res = await fetch(`${WORKER_URL}/${name}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}) },
+    body: JSON.stringify(data ?? {}),
+  });
+  const body = (await res.json()) as { result?: T; error?: { code: string; message: string; details?: { reason?: string } } };
+  if (!res.ok || body.error) throw Object.assign(new Error(body.error?.message ?? `HTTP ${res.status}`), { code: body.error?.code, details: body.error?.details, status: res.status });
+  return body.result as T;
+}
+
 export interface TestUser {
   uid: string;
   email: string;
@@ -31,7 +46,10 @@ export async function createUser(label: string): Promise<TestUser> {
   return {
     uid: cred.user.uid,
     email,
-    call: async <T>(name: string, data: unknown) => (await httpsCallable(fns, name)(data)).data as T,
+    call: async <T>(name: string, data: unknown) => {
+      if (!WORKER_URL) return (await httpsCallable(fns, name)(data)).data as T;
+      return callWorker<T>(name, data, await cred.user.getIdToken());
+    },
     refreshToken: async () => {
       await cred.user.getIdToken(true);
     },

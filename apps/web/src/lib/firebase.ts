@@ -26,9 +26,9 @@ export const app = initializeApp({
   appId: required('VITE_FIREBASE_APP_ID'),
 });
 
-if (env.VITE_APPCHECK_SITE_KEY) {
-  initializeAppCheck(app, { provider: new ReCaptchaEnterpriseProvider(env.VITE_APPCHECK_SITE_KEY), isTokenAutoRefreshEnabled: true });
-}
+export const appCheck = env.VITE_APPCHECK_SITE_KEY
+  ? initializeAppCheck(app, { provider: new ReCaptchaEnterpriseProvider(env.VITE_APPCHECK_SITE_KEY), isTokenAutoRefreshEnabled: true })
+  : null;
 
 export const auth = getAuth(app);
 

@@ -1,4 +1,4 @@
 .secrets/
 .wrangler/
 node_modules/
-dist/
+dist/.dev.vars

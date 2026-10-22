@@ -1,6 +1,9 @@
 import { importPKCS8, SignJWT } from 'jose';
 import type { Env } from '../env';
-import { ApiError } from '../errors';
+import { HttpsError } from '../shims/firebase-functions-https';
+
+const misconfigured = () =>
+  new HttpsError('internal', 'Server is misconfigured.', { reason: 'internal', message: 'Something went wrong on our side. Please try again.' });
 
 interface ServiceAccount {
   client_email: string;
@@ -17,9 +20,11 @@ export async function getAccessToken(env: Env): Promise<string> {
 
   let sa: ServiceAccount;
   try {
-    sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT) as ServiceAccount;
+    sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT ?? '') as ServiceAccount;
+    if (!sa.client_email || !sa.private_key) throw new Error('incomplete');
   } catch {
-    throw new ApiError('internal', 'Worker is misconfigured.');
+    console.error(JSON.stringify({ severity: 'ERROR', message: 'FIREBASE_SERVICE_ACCOUNT secret is missing or invalid' }));
+    throw misconfigured();
   }
 
   const key = await importPKCS8(sa.private_key, 'RS256');
@@ -42,8 +47,8 @@ export async function getAccessToken(env: Env): Promise<string> {
     }),
   });
   if (!res.ok) {
-    console.error('OAuth exchange failed', res.status, await res.text());
-    throw new ApiError('internal', 'Worker is misconfigured.');
+    console.error(JSON.stringify({ severity: 'ERROR', message: 'Google OAuth token exchange failed', status: res.status, body: (await res.text()).slice(0, 300) }));
+    throw misconfigured();
   }
   const data = (await res.json()) as { access_token: string; expires_in: number };
   cache = { token: data.access_token, expiresAt: now + data.expires_in };

@@ -41,6 +41,8 @@ function start(key: string, source: Source) {
     e.subscribers.forEach((fn) => fn());
   };
   const onError = (err: unknown) => {
+    // Keep the technical detail (e.g. Firestore's "create index" link) in the console for whoever deploys the app.
+    console.error(`Live query failed (${key}):`, err);
     e.error = toUserError(err).message;
     e.loaded = true;
     e.unsubscribe = null;
