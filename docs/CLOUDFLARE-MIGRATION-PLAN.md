@@ -2,7 +2,7 @@
 
 ## Status and safety
 
-The current app uses React + TypeScript, Firebase Auth, Firestore, Storage, and callable Cloud Functions. Existing finance and tenancy operations depend on server-side authorization, transactions, idempotency, and audit logs. This branch adds a fail-closed Cloudflare Worker foundation only; it is not yet a production cut-over and does not remove Firebase Functions from deployment.
+The current app uses React + TypeScript, Firebase Auth, Firestore, Storage, and callable Cloud Functions. Existing finance and tenancy operations depend on server-side authorization, transactions, idempotency, and audit logs. **Update:** the cut-over is implemented. Every operation in `apps/functions/src` is served by the Worker (`apps/worker`) through a Firestore REST adapter, the web app calls the Worker when `VITE_WORKER_URL` is set, and the handler suites pass through the Worker (`npm run test:worker`). Firebase Functions no longer need to be deployed. See docs/DEPLOYMENT.md. The plan below is kept for history.
 
 ## Target architecture
 

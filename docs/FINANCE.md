@@ -1,7 +1,7 @@
 # Finance: model, rules and guarantees
 
 All finance logic lives in `packages/shared/src/finance/` and is used unchanged by the
-Cloud Functions (to validate and apply writes) and by the UI (to display). There is one
+the server handlers run by the Cloudflare Worker (to validate and apply writes) and by the UI (to display). There is one
 definition of every number.
 
 ## Money

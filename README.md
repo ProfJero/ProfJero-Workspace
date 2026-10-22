@@ -4,7 +4,8 @@ A multi-tenant workspace for tasks, projects, goals, notes, calendar, clients, f
 learning and habits — built so that **every balance is traceable, every action is
 authorised on the server, and no workspace can see another's data.**
 
-React + TypeScript (Vite) · Firebase Auth / Firestore / Cloud Functions / Storage.
+React + TypeScript (Vite) on Cloudflare Pages · server API on a Cloudflare Worker ·
+Firebase Auth / Firestore / Storage.
 
 ## Modules
 
@@ -28,15 +29,17 @@ React + TypeScript (Vite) · Firebase Auth / Firestore / Cloud Functions / Stora
 ```bash
 npm install
 cp apps/web/.env.example apps/web/.env.local   # VITE_USE_EMULATORS=true, VITE_FIREBASE_PROJECT_ID=demo-profjero
-npm run build -w @profjero/functions
-npx firebase emulators:start --project demo-profjero   # see docs/DEPLOYMENT.md if behind a proxy
+# also set VITE_WORKER_URL=http://127.0.0.1:8787
+cp apps/worker/.dev.vars.example apps/worker/.dev.vars
+npx firebase emulators:start --only auth,firestore,storage --project demo-profjero   # see docs/DEPLOYMENT.md if behind a proxy
+(cd apps/worker && npx wrangler dev)
 npm run dev
 ```
 
 ## Verify
 
 ```bash
-npm run typecheck && npm test && npm run test:emulator && npm run build
+npm run typecheck && npm test && npm run test:emulator && npm run test:worker && npm run build
 ```
 
 * `npm test` — 90 unit tests: money, dates, ledger, reports, budgets, savings, debts, invoices,
