@@ -34,8 +34,8 @@ export const auth = getAuth(app);
 
 /**
  * Offline cache: workspace data (tasks, notes, …) stays readable offline and
- * edits sync when the connection returns. Finance writes go through Cloud
- * Functions and are never queued offline (see useAction).
+ * edits sync when the connection returns. Finance writes go through the
+ * server API (Cloudflare Worker) and are never queued offline (see useAction).
  */
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),

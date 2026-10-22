@@ -1,11 +1,23 @@
 /// <reference types="vitest/config" />
 import { fileURLToPath, URL } from 'node:url';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import { pagesHeaders } from './headers';
 
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
+/** Emits Cloudflare Pages security headers for the build's environment. */
+function cloudflareHeaders(mode: string): Plugin {
+  return {
+    name: 'cloudflare-pages-headers',
+    apply: 'build',
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: '_headers', source: pagesHeaders(loadEnv(mode, process.cwd(), 'VITE_')) });
+    },
+  };
+}
+
+export default defineConfig(({ mode }) => ({
+  plugins: [react(), tailwindcss(), cloudflareHeaders(mode)],
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   build: {
     target: 'es2022',
@@ -21,4 +33,4 @@ export default defineConfig({
     },
   },
   test: { environment: 'jsdom', include: ['src/**/*.test.{ts,tsx}'] },
-});
+}));

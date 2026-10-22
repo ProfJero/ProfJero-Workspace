@@ -116,7 +116,12 @@ export function FinanceOverview() {
   const s = summarize(txs, month, currency);
   const prev = summarize(txs, lastMonth, currency);
   const pos = netPosition(live, debts, currency);
-  const health = useMemo(() => financialHealth({ accounts: accounts.data ?? [], transactions: txs, debts, budgets, currency, today }), [accounts.data, txs, debts, budgets, currency, today]);
+  // Budget adherence is judged on the last complete month, so only budgets that existed then count.
+  const health = useMemo(() => {
+    const monthStartMs = new Date(`${startOfMonth(today)}T00:00:00Z`).getTime();
+    const established = budgets.filter((b) => (b.createdAt?.toMillis() ?? Infinity) < monthStartMs);
+    return financialHealth({ accounts: accounts.data ?? [], transactions: txs, debts, budgets: established, currency, today });
+  }, [accounts.data, txs, debts, budgets, currency, today]);
   const series = monthlySeries(txs, { start: addMonths(startOfMonth(today), -5), end: month.end }, currency);
   const cats = spendingByCategory(txs, month, currency);
   const budgetEvals = budgets.map((b) => ({ b, e: evaluateBudget(b, txs, today) })).filter(({ e }) => e.status === 'warning' || e.status === 'exceeded' || e.status === 'at_limit');
