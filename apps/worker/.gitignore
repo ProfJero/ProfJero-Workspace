@@ -1,0 +1,4 @@
+.secrets/
+.wrangler/
+node_modules/
+dist/

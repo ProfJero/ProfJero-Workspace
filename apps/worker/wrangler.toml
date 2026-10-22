@@ -2,9 +2,20 @@ name = "profjero-workspace-api"
 main = "src/index.ts"
 compatibility_date = "2026-10-20"
 
+# Resolve the shared workspace package directly from source so wrangler's
+# esbuild bundle can inline it without needing a build step.
+[alias]
+"@profjero/shared" = "../../packages/shared/src/index.ts"
+
 [vars]
 APP_ENV = "development"
 WEB_ORIGIN = "http://localhost:5173"
+FIREBASE_PROJECT_ID = "profjero"
 
-# Configure secrets using Wrangler secrets; never commit credentials.
-# Add a D1 binding only after creating the database and applying reviewed migrations.
+[env.production.vars]
+APP_ENV = "production"
+WEB_ORIGIN = "https://profjero-workspace.pages.dev"
+FIREBASE_PROJECT_ID = "profjero"
+
+# Secrets (set once per environment with `wrangler secret put`):
+#   FIREBASE_SERVICE_ACCOUNT — JSON of the dedicated profjero-worker service account.
