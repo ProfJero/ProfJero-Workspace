@@ -26,16 +26,16 @@ export const app = initializeApp({
   appId: required('VITE_FIREBASE_APP_ID'),
 });
 
-if (env.VITE_APPCHECK_SITE_KEY) {
-  initializeAppCheck(app, { provider: new ReCaptchaEnterpriseProvider(env.VITE_APPCHECK_SITE_KEY), isTokenAutoRefreshEnabled: true });
-}
+export const appCheck = env.VITE_APPCHECK_SITE_KEY
+  ? initializeAppCheck(app, { provider: new ReCaptchaEnterpriseProvider(env.VITE_APPCHECK_SITE_KEY), isTokenAutoRefreshEnabled: true })
+  : null;
 
 export const auth = getAuth(app);
 
 /**
  * Offline cache: workspace data (tasks, notes, …) stays readable offline and
- * edits sync when the connection returns. Finance writes go through Cloud
- * Functions and are never queued offline (see useAction).
+ * edits sync when the connection returns. Finance writes go through the
+ * server API (Cloudflare Worker) and are never queued offline (see useAction).
  */
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),

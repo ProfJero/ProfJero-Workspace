@@ -3,8 +3,8 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "lib": ["ES2022"],
-    "types": ["@cloudflare/workers-types"],
+    "lib": ["ES2023"],
+    "types": ["@cloudflare/workers-types", "node"],
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
@@ -12,7 +12,12 @@
     "isolatedModules": true,
     "resolveJsonModule": true,
     "paths": {
-      "@profjero/shared": ["../../packages/shared/src/index.ts"]
+      "@profjero/shared": ["../../packages/shared/src/index.ts"],
+      "firebase-admin/app": ["./src/shims/firebase-admin-app.ts"],
+      "firebase-admin/firestore": ["./src/shims/firebase-admin-firestore.ts"],
+      "firebase-functions/v2/https": ["./src/shims/firebase-functions-https.ts"],
+      "firebase-functions/v2": ["./src/shims/firebase-functions-v2.ts"],
+      "firebase-functions/logger": ["./src/shims/firebase-functions-logger.ts"]
     }
   },
   "include": ["src/**/*"]

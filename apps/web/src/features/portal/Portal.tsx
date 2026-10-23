@@ -116,6 +116,7 @@ export function PortalPage() {
                   <div className="text-right text-sm">
                     <Money minor={due} currency={cur} className="font-semibold" />
                     <p className="text-xs text-muted">of <Money minor={inv.totalMinor} currency={cur} /></p>
+                    {pending > 0 && <p className="text-xs text-warning-ink"><Money minor={pending} currency={cur} /> awaiting confirmation</p>}
                   </div>
                   {inv.status === 'paid' ? <Badge tone="good" icon={<CheckCircle2 className="size-3" />}>Paid</Badge>
                     : pending >= due ? <Badge tone="warning">Payment being confirmed</Badge>

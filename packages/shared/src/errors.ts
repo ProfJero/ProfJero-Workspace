@@ -17,6 +17,7 @@ export const ERROR_REASONS = {
   link_invalid: 'This link is invalid or has expired. Ask the sender for a new one.',
   email_unverified: 'Verify your email address before accepting invitations.',
   unavailable: "We couldn't reach the server. Check your connection and try again.",
+  setup_incomplete: "This part of the app isn't ready yet: a database index is missing or still being built. If you run this workspace, deploy the Firestore indexes (docs/DEPLOYMENT.md); building can take a few minutes.",
   internal: 'Something went wrong on our side. Please try again.',
 } as const;
 
@@ -70,6 +71,12 @@ export interface UserFacingError {
 export function toUserError(err: unknown): UserFacingError {
   const e = err as { code?: string; details?: { reason?: string; message?: string; fields?: Record<string, string> } } | null;
   const code = e?.code ?? '';
+  // Firestore reports a query whose composite index is missing (or still building) as
+  // failed-precondition. That is a deployment problem, not an edit conflict.
+  const raw = (err as { message?: unknown } | null)?.message;
+  if ((code === 'failed-precondition' || code === 'functions/failed-precondition') && typeof raw === 'string' && /requires an index|index is currently building|indexes\?create_composite/i.test(raw)) {
+    return { reason: 'setup_incomplete', message: ERROR_REASONS.setup_incomplete };
+  }
   if (code.startsWith('auth/')) return { reason: 'auth', message: AUTH_MESSAGES[code] ?? 'Sign-in failed. Please try again.' };
   const detailReason = e?.details?.reason;
   if (detailReason && detailReason in ERROR_REASONS) {

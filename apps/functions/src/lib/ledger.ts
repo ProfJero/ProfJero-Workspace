@@ -1,4 +1,4 @@
-import type { DocumentReference, Transaction } from 'firebase-admin/firestore';
+import type { DocumentReference, Transaction, DocumentData } from 'firebase-admin/firestore';
 import {
   DEFAULT_CATEGORIES,
   effectDelta,
@@ -50,7 +50,7 @@ export function ledgerDelta(before: LedgerTransaction | null, after: LedgerTrans
 }
 
 /** Stored transaction document → domain object. */
-export function toLedger(id: string, d: FirebaseFirestore.DocumentData): LedgerTransaction {
+export function toLedger(id: string, d: DocumentData): LedgerTransaction {
   return {
     id,
     type: d.type,

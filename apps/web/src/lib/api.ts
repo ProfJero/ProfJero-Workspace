@@ -1,9 +1,10 @@
 import { useCallback, useRef, useState, useSyncExternalStore } from 'react';
 import { httpsCallable } from 'firebase/functions';
 import { toUserError, type UserFacingError } from '@profjero/shared';
-import { auth, functions } from './firebase';
+import { getToken } from 'firebase/app-check';
+import { appCheck, auth, functions } from './firebase';
 
-/** Names of the callable server functions (apps/functions + apps/worker). */
+/** Names of the server operations (apps/functions/src/callables.ts). */
 export type FunctionName =
   | 'createTenant' | 'updateTenant' | 'inviteMember' | 'revokeInvitation' | 'acceptInvitation' | 'changeMemberRole'
   | 'removeMember' | 'transferOwnership'
@@ -13,57 +14,51 @@ export type FunctionName =
   | 'saveInvoice' | 'sendInvoice' | 'voidInvoice' | 'recordInvoicePayment' | 'createPortalLink' | 'revokePortalLinks'
   | 'reviewPaymentNotice' | 'portalGetInvoices' | 'portalSubmitPaymentNotice' | 'migrateLegacyData';
 
-/** Functions migrated to the Cloudflare Worker. Remove from this map when they go back to Firebase, add when they move. */
-const WORKER_ROUTED: Partial<Record<FunctionName, string>> = {
-  createTenant: '/createTenant',
-};
+/**
+ * Server operations run on the Cloudflare Worker (apps/worker) when
+ * VITE_WORKER_URL is set, otherwise on Firebase Functions. Both run the same
+ * handler code and speak the same error format.
+ */
+const WORKER_URL = (import.meta.env.VITE_WORKER_URL as string | undefined)?.replace(/\/+$/, '') || undefined;
 
-const WORKER_URL = import.meta.env.VITE_WORKER_URL as string | undefined;
+function callError(code: string, details: { reason: string; message: string; fields?: Record<string, string> }): Error {
+  return Object.assign(new Error(details.message), { code: `functions/${code}`, details });
+}
 
-async function callViaWorker<T>(route: string, data: unknown): Promise<T> {
+async function callViaWorker<T>(name: FunctionName, data: unknown): Promise<T> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  // Signed-in calls carry the Firebase ID token; the public portal calls do not.
   const user = auth.currentUser;
-  if (!user) {
-    const err = new Error('Please sign in to continue.');
-    Object.assign(err, {
-      code: 'functions/unauthenticated',
-      details: { reason: 'not_authenticated', message: 'Please sign in to continue.' },
-    });
-    throw err;
+  if (user) headers.Authorization = `Bearer ${await user.getIdToken()}`;
+  if (appCheck) {
+    const { token } = await getToken(appCheck).catch(() => ({ token: '' }));
+    if (token) headers['X-Firebase-AppCheck'] = token;
   }
 
-  const token = await user.getIdToken();
-  const res = await fetch(`${WORKER_URL}${route}`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-
+  let res: Response;
+  try {
+    res = await fetch(`${WORKER_URL}/${name}`, { method: 'POST', headers, body: JSON.stringify(data ?? {}) });
+  } catch {
+    throw callError('unavailable', { reason: 'unavailable', message: "We couldn't reach the server. Check your connection and try again." });
+  }
   const body = (await res.json().catch(() => ({}))) as {
     result?: T;
-    error?: {
-      code?: string;
-      message?: string;
-      details?: { reason?: string; message?: string; fields?: Record<string, string> };
-    };
+    error?: { code?: string; message?: string; details?: { reason?: string; message?: string; fields?: Record<string, string> } };
   };
-
   if (!res.ok || body.error) {
-    // Reconstruct the same shape the Firebase Functions SDK throws so
-    // toUserError() maps the error identically to a failed callable.
-    const err = new Error(body.error?.message ?? 'Request failed.');
-    Object.assign(err, {
-      code: `functions/${body.error?.code ?? 'internal'}`,
-      details: body.error?.details ?? { reason: 'internal', message: 'Request failed.' },
+    // Same shape the Firebase Functions SDK throws, so toUserError() maps both identically.
+    const d = body.error?.details;
+    throw callError(body.error?.code ?? (res.status >= 500 ? 'internal' : 'unknown'), {
+      reason: d?.reason ?? 'internal',
+      message: d?.message ?? 'Something went wrong on our side. Please try again.',
+      ...(d?.fields ? { fields: d.fields } : {}),
     });
-    throw err;
   }
-
   return body.result as T;
 }
 
 export async function call<T = Record<string, unknown>>(name: FunctionName, data: unknown): Promise<T> {
-  const route = WORKER_ROUTED[name];
-  if (route && WORKER_URL) return callViaWorker<T>(route, data);
+  if (WORKER_URL) return callViaWorker<T>(name, data);
   const res = await httpsCallable(functions, name, { timeout: 60_000 })(data);
   return res.data as T;
 }

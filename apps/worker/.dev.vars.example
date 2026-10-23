@@ -1,0 +1,5 @@
+# Copy to .dev.vars for `wrangler dev` against the Firebase emulators.
+# These are refused when APP_ENV=production.
+FIREBASE_PROJECT_ID=demo-profjero
+FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
+FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099

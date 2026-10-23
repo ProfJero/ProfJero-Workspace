@@ -1,4 +1,4 @@
-import { FieldValue } from 'firebase-admin/firestore';
+import { FieldValue, type DocumentReference, type DocumentData, type Transaction } from 'firebase-admin/firestore';
 import {
   LOAN_TYPES,
   computeBalances,
@@ -40,7 +40,7 @@ import {
 const issuesToFields = (issues: { field: string; message: string }[]) => Object.fromEntries(issues.map((i) => [i.field, i.message]));
 const accountView = (m: Map<string, { data: Account }>) => new Map([...m].map(([k, v]) => [k, v.data]));
 
-async function tenantCurrency(t: FirebaseFirestore.Transaction, tenantId: string): Promise<string> {
+async function tenantCurrency(t: Transaction, tenantId: string): Promise<string> {
   const tenant = await getOrFail(t, tenantRef(tenantId), 'workspace');
   return tenant.currency as string;
 }
@@ -106,7 +106,7 @@ export const createTransaction = tenantCallable('finance.write', createTransacti
     await checkLinks(t, ctx.tenantId, entry);
 
     // Refunds: must reference a posted expense and cannot exceed what is left to refund.
-    let original: { ref: FirebaseFirestore.DocumentReference; data: FirebaseFirestore.DocumentData } | null = null;
+    let original: { ref: DocumentReference; data: DocumentData } | null = null;
     if (entry.type === 'refund' && entry.refundOfId) {
       const ref = transactionsCol(ctx.tenantId).doc(entry.refundOfId);
       const data = await getOrFail(t, ref, 'original expense');
@@ -163,7 +163,7 @@ export const updateTransaction = tenantCallable('finance.write', updateTransacti
     await checkCategory(t, ctx.tenantId, entry.type, entry.categoryId);
     await checkLinks(t, ctx.tenantId, entry);
 
-    let original: { ref: FirebaseFirestore.DocumentReference; data: FirebaseFirestore.DocumentData } | null = null;
+    let original: { ref: DocumentReference; data: DocumentData } | null = null;
     if (entry.type === 'refund' && entry.refundOfId) {
       const oRef = transactionsCol(ctx.tenantId).doc(entry.refundOfId);
       const data = await getOrFail(t, oRef, 'original expense');

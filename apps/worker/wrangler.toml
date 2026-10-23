@@ -1,21 +1,45 @@
 name = "profjero-workspace-api"
 main = "src/index.ts"
 compatibility_date = "2026-10-20"
+# node:crypto (createHash, randomBytes) is used by the portal and import handlers.
+compatibility_flags = ["nodejs_compat"]
 
-# Resolve the shared workspace package directly from source so wrangler's
-# esbuild bundle can inline it without needing a build step.
+# The server handlers are shared with apps/functions. These aliases swap the
+# Firebase server SDKs for the Worker adapter (src/shims, src/firestore/client.ts).
 [alias]
 "@profjero/shared" = "../../packages/shared/src/index.ts"
+"firebase-admin/app" = "./src/shims/firebase-admin-app.ts"
+"firebase-admin/firestore" = "./src/shims/firebase-admin-firestore.ts"
+"firebase-functions/v2/https" = "./src/shims/firebase-functions-https.ts"
+"firebase-functions/v2" = "./src/shims/firebase-functions-v2.ts"
+"firebase-functions/logger" = "./src/shims/firebase-functions-logger.ts"
 
+[observability]
+enabled = true
+
+# Local development (wrangler dev). Point the Worker at the Firebase emulators
+# with apps/worker/.dev.vars (see .dev.vars.example).
 [vars]
 APP_ENV = "development"
-WEB_ORIGIN = "http://localhost:5173"
+WEB_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173"
 FIREBASE_PROJECT_ID = "profjero"
+
+[env.production]
+name = "profjero-workspace-api"
 
 [env.production.vars]
 APP_ENV = "production"
-WEB_ORIGIN = "https://profjero-workspace.pages.dev"
+# Every origin that serves the web app, comma-separated (add your custom domain here).
+WEB_ORIGINS = "https://profjero-workspace.pages.dev"
 FIREBASE_PROJECT_ID = "profjero"
+# APPCHECK_PROJECT_NUMBER = "950791554195"   # uncomment once App Check is enabled in the web app
 
-# Secrets (set once per environment with `wrangler secret put`):
-#   FIREBASE_SERVICE_ACCOUNT — JSON of the dedicated profjero-worker service account.
+# Optional rate limit for the public client-portal routes.
+# [[env.production.unsafe.bindings]]
+# name = "PORTAL_RATE_LIMITER"
+# type = "ratelimit"
+# namespace_id = "1001"
+# simple = { limit = 30, period = 60 }
+
+# Secrets (set per environment; never commit them):
+#   npx wrangler secret put FIREBASE_SERVICE_ACCOUNT --env production

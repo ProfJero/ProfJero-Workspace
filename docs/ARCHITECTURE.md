@@ -1,8 +1,14 @@
 # Architecture
 
 ProfJero Workspace is a multi-tenant productivity and finance workspace built on
-**React + TypeScript (Vite)** and **Firebase** (Auth, Firestore, Cloud Functions,
-Storage, Hosting).
+**React + TypeScript (Vite)** served by **Cloudflare Pages**, a **Cloudflare Worker** API for
+every privileged operation, and **Firebase** Auth, Firestore and Storage.
+
+The server handlers live in `apps/functions/src` and are written against the Firebase Admin /
+Functions APIs. The Worker (`apps/worker`) runs that same code: wrangler aliases those modules to
+small shims and a Firestore REST adapter (`apps/worker/src/firestore/client.ts`) that implements
+transactions, batched writes and queries with a service account. There is one implementation of
+every rule, tested both on the Functions emulator and through the Worker.
 
 ## Repository layout
 
@@ -19,14 +25,16 @@ packages/shared/        Domain logic used by BOTH the server and the UI (no Fire
   src/finance/*           ledger, reports, budgets, savings, debts, invoices,
                           health score, insights
   test/                   unit tests (vitest)
-apps/functions/         Cloud Functions (callable). Every privileged / financial write.
+apps/functions/         Server handlers (run by the Worker). Every privileged / financial write.
   src/lib/core.ts         auth, membership check, input validation, idempotency, audit log, errors
   src/lib/ledger.ts       account loading + transactional balance updates
   src/tenants.ts          workspaces, invitations, roles, removal, ownership
   src/finance.ts          accounts, transactions, debts, budgets, savings, reconciliation
   src/invoices.ts         invoices, payments, client portal
   src/migration.ts        legacy data import
-  test/                   emulator tests: rules, functions, migration
+  test/                   emulator tests: rules, functions, migration, worker transport
+apps/worker/            Cloudflare Worker: routing, CORS, token / App Check verification,
+                          rate limits, Firestore REST adapter, firebase-* shims
 apps/web/               React app
   src/app/                auth, tenant context, shell/navigation, router
   src/lib/                Firebase init, live query cache, data writes, server actions, toasts
@@ -58,7 +66,7 @@ UI ──────────────► Firestore ◄── security ru
   learning, habits, custom categories) go directly to Firestore. They are validated in
   the browser and again by the rules, which are compiled from the same Zod schemas.
   They work offline and sync later.
-* **Privileged writes** go through callable functions. Finance writes are never queued
+* **Privileged writes** go through the Worker API (`POST /<operation>` with the Firebase ID token). Finance writes are never queued
   offline (`useAction` refuses to run offline so a payment cannot be replayed twice later).
 
 ## Multi-tenancy

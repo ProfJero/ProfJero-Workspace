@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from 'firebase-admin/app';
-import { FieldValue, getFirestore, type DocumentReference, type Transaction } from 'firebase-admin/firestore';
+import { FieldValue, getFirestore, type DocumentReference, type Transaction, type DocumentData } from 'firebase-admin/firestore';
 import { HttpsError, onCall, type CallableRequest } from 'firebase-functions/v2/https';
 import * as logger from 'firebase-functions/logger';
 import type { z } from 'zod';
@@ -23,6 +23,7 @@ const REASON_TO_CODE: Record<ErrorReason, ConstructorParameters<typeof HttpsErro
   link_invalid: 'not-found',
   email_unverified: 'failed-precondition',
   unavailable: 'unavailable',
+  setup_incomplete: 'failed-precondition',
   internal: 'internal',
 };
 
@@ -179,7 +180,7 @@ export function audit(
   t.create(ref, { actorUid: ctx.uid, action, resource, metadata, at: FieldValue.serverTimestamp() });
 }
 
-export async function getOrFail<T = FirebaseFirestore.DocumentData>(t: Transaction, ref: DocumentReference, what = 'item'): Promise<T> {
+export async function getOrFail<T = DocumentData>(t: Transaction, ref: DocumentReference, what = 'item'): Promise<T> {
   const snap = await t.get(ref);
   if (!snap.exists) fail('not_found', `That ${what} no longer exists.`);
   return snap.data() as T;
